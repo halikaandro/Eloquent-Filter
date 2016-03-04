@@ -82,6 +82,10 @@ class UserController extends Controller
 ```
 
 ## Configuration
+### Install Through Composer
+```
+composer require tucker-eric/eloquentfilter
+```
 After installing the Eloquent Filter library, register the `EloquentFilter\ServiceProvider::class` in your `config/app.php` configuration file:
 ```php
 'providers' => [
