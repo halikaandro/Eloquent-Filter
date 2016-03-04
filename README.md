@@ -187,7 +187,7 @@ We want to query our User's and filter them based on the industry of their clien
 Input used to filter:
 ```php
 $input = [
-	industry => 5
+	'industry' => '5'
 ];
 ```
 `UserFilter` with the relation defined so it's able to be queried.  
