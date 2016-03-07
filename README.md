@@ -32,12 +32,12 @@ class UserController extends Controller
     {
     	$query = User::where('company_id', $request->input('company_id'));
 
-        if ($request->input('last_name') !== '')
+        if ($request->has('last_name'))
         {
             $query->where('last_name', 'LIKE', '%' . $request->input('last_name') . '%');
         }
 
-        if ($request->input('name') !== '')
+        if ($request->has('name'))
         {
             $query->where(function ($q) use ($request)
             {
@@ -201,7 +201,7 @@ class UserFilter extends ModelFilter
 ```
 `ClientFilter` with the `industry` method that's used to filter:
 ```php
-class UserFilter extends ModelFilter
+class ClientFilter extends ModelFilter
 {
 	public $relations = [];
     
