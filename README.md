@@ -172,7 +172,7 @@ class User extends Model
 ```
 Let's also say each `App\Client` has belongs to `App\Industry::class`:
 ```php
-class User extends Model
+class Client extends Model
 {
     use Filterable;
     
