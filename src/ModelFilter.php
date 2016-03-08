@@ -197,11 +197,11 @@ class ModelFilter
      * @param null $key
      * @return array|mixed|null
      */
-    public function input($key = null)
+    public function input($key = null, $default = null)
     {
         if (is_null($key))
             return $this->input;
 
-        return isset($this->input[$key]) ? $this->input[$key] : null;
+        return isset($this->input[$key]) ? $this->input[$key] : $default;
     }
 }
