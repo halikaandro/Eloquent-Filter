@@ -148,6 +148,33 @@ class UserController extends Controller
     }
 }
 ```
+#### Pagination
+If you want to paginate your query and keep the url query string without having to use:
+```php
+{!! $pages->appends(Input::except('page'))->render() !!}
+```
+The `paginateFilter()` and `simplePaginateFilter()` methods accept the same input as [Laravel's paginator](https://laravel.com/docs/master/pagination#basic-usage) and returns the respective paginator.
+```php
+class UserController extends Controller
+{
+	public function index(Request $request)
+    {
+        $users = User::filter($request->all())->paginateFilter();
+        
+        return view('users.index', compact('users'));
+    }
+```
+OR:
+```php
+    public function simpleIndex(Request $request)
+    {
+        $users = User::filter($request->all())->paginateSimpleFilter();
+        
+        return view('users.index', compact('users'));
+    }
+}
+```
+In your view `$users->render()` will return pagination links as it normally would but with the original query string with empty input ignored.
 
 #### Filtering By Relationships
 In order to filter by a relationship (whether the relation is joined in the query or not) add the relation in the `$relations` array with the name of the relation as referred to on the model as the key and the column names that will be received as input to filter.
