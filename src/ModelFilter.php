@@ -195,6 +195,7 @@ class ModelFilter
      * Retrieve input by key or all input as array
      * 
      * @param null $key
+     * @param null $default
      * @return array|mixed|null
      */
     public function input($key = null, $default = null)
