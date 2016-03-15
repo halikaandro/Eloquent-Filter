@@ -25,12 +25,7 @@ class ModelFilter
      */
     protected $query;
 
-    /**
-     * Array of methods to call regardless of input
-     *
-     * @var array
-     */
-    protected $global = [];
+    protected $drop_id = true;
 
     private $_joinedTables = null;
 
@@ -100,7 +95,7 @@ class ModelFilter
         foreach ($this->input as $key => $val)
         {
             // Call all local methods on filter
-            $method = camel_case(preg_replace('/^(.*)_id$/', '$1', $key));
+            $method = camel_case($this->drop_id ? preg_replace('/^(.*)_id$/', '$1', $key) : $key);
 
             if (method_exists($this, $method))
             {
