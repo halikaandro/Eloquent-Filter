@@ -8,7 +8,7 @@ class ModelFilter
     /**
      * Related Models that have ModelFilters as well as the method on the ModelFilter
      * As [relatedModel => [method1, method2]]
-     * 
+     *
      * @var array
      */
     public $relations = [];
@@ -24,6 +24,13 @@ class ModelFilter
      * @var \Illuminate\Database\Eloquent\Builder
      */
     protected $query;
+
+    /**
+     * Array of methods to call regardless of input
+     *
+     * @var array
+     */
+    protected $global = [];
 
     private $_joinedTables = null;
 
@@ -67,11 +74,28 @@ class ModelFilter
     }
 
     /**
-     * Handle all input filters
+     * Handle all filters
      *
      * @return QueryBuilder
      */
     public function handle()
+    {
+        // Filter global methods
+        if(method_exists($this, 'global'))
+            $this->global();
+        
+        // Run input filters
+        $this->filterInput();
+        // Set up all the whereHas and joins constraints
+        $this->filterRelations();
+
+        return $this->query;
+    }
+
+    /**
+     * Filter with input array
+     */
+    public function filterInput()
     {
         foreach ($this->input as $key => $val)
         {
@@ -83,11 +107,6 @@ class ModelFilter
                 call_user_func([$this, $method], $val);
             }
         }
-
-        // Set up all the whereHas and joins constraints
-        $this->filterRelations();
-
-        return $this->query;
     }
 
     /**
@@ -193,7 +212,7 @@ class ModelFilter
 
     /**
      * Retrieve input by key or all input as array
-     * 
+     *
      * @param null $key
      * @param null $default
      * @return array|mixed|null
