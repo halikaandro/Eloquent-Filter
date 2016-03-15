@@ -172,7 +172,7 @@ class UserFilter extends ModelFilter
 > Note:  In the above example if you do not want `_id` dropped from the end of the input you can set `protected $drop_id = false` on your filter class.  Doing this would allow you to have a `company()` filter method as well as a `companyId()` filter method.
 
 > Note: In the example above all methods inside `global()` will be called every time `filter()` is called on the model
-> 
+
 ### Applying The Filter To A Model
 
 Implement the `EloquentFilter\Filterable` trait on any Eloquent model:
