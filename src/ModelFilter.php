@@ -25,8 +25,19 @@ class ModelFilter
      */
     protected $query;
 
+    /**
+     * Drop `_id` from the end of input keys when referencing methods
+     *
+     * @var bool
+     */
     protected $drop_id = true;
 
+    /**
+     * Tables already joined in the query to filter by the joined column instead of using
+     *  ->whereHas to save a little bit of resources
+     *
+     * @var null
+     */
     private $_joinedTables = null;
 
     /**
@@ -78,7 +89,7 @@ class ModelFilter
         // Filter global methods
         if(method_exists($this, 'global'))
             $this->global();
-        
+
         // Run input filters
         $this->filterInput();
         // Set up all the whereHas and joins constraints

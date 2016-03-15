@@ -116,12 +116,63 @@ Where `User` is the Eloquent Model you are creating the filter for.  This will c
 Define the filter logic based on the camel cased input key passed to the `filter()` method.
 
 - Empty strings are ignored
+- `global()` will be called regardless of input
 - `_id` is dropped from the end of the input to define the method so filtering `user_id` would use the `user()` method
 - Input without a corresponding filter method are ignored
 - The value of the key is injected into the method
 - All values are accessible through the `$this->input()` method or a single value by key `$this->input($key)` 
 - All Eloquent Builder methods are accessible in `this` context in the model filter class.
 
+To define methods for the following input:
+```php
+[
+	'company_id'   => 5,
+	'name'         => 'Tuck',
+	'mobile_phone' => '888555'
+]
+```
+You would use the following methods:
+```php
+class UserFilter extends ModelFilter
+{
+	// This will filter 'company_id' OR 'company'
+    public function company($id)
+    {
+        return $this->where('company_id', $id);
+    }
+    
+    public function name($name)
+    {
+        return $this->where(function($q) use ($name)
+        {
+            return $q->where('first_name', 'LIKE', "%$name%")
+                ->orWhere('last_name', 'LIKE', "%$name%");
+        });
+    }
+    
+    public function mobilePhone($phone)
+    {
+        return $this->where('mobile_phone', 'LIKE', "$phone%");
+    }
+
+	public function global()
+    {
+        $this->onlyShowDeletedForAdmins();
+    }
+
+    public function onlyShowDeletedForAdmins()
+    {
+        if(Auth::user()->isAdmin())
+        {
+            $this->withTrashed();
+        }
+    }
+}
+```
+> Note:  In the above example if you do not want `_id` dropped from the end of the input you can set `protected $drop_id = false` on your filter class.  Doing this would allow you to have a `company()` filter method as well as a `companyId()` filter method.
+
+> Note: In the example above all methods inside `global()` will be called every time `filter()` is called on the model
+> 
 ### Applying The Filter To A Model
 
 Implement the `EloquentFilter\Filterable` trait on any Eloquent model:
@@ -148,34 +199,6 @@ class UserController extends Controller
     }
 }
 ```
-#### Pagination
-If you want to paginate your query and keep the url query string without having to use:
-```php
-{!! $pages->appends(Input::except('page'))->render() !!}
-```
-The `paginateFilter()` and `simplePaginateFilter()` methods accept the same input as [Laravel's paginator](https://laravel.com/docs/master/pagination#basic-usage) and returns the respective paginator.
-```php
-class UserController extends Controller
-{
-	public function index(Request $request)
-    {
-        $users = User::filter($request->all())->paginateFilter();
-        
-        return view('users.index', compact('users'));
-    }
-```
-OR:
-```php
-    public function simpleIndex(Request $request)
-    {
-        $users = User::filter($request->all())->paginateSimpleFilter();
-        
-        return view('users.index', compact('users'));
-    }
-}
-```
-In your view `$users->render()` will return pagination links as it normally would but with the original query string with empty input ignored.
-
 #### Filtering By Relationships
 In order to filter by a relationship (whether the relation is joined in the query or not) add the relation in the `$relations` array with the name of the relation as referred to on the model as the key and the column names that will be received as input to filter.
 
@@ -288,5 +311,33 @@ class UserFilter extends ModelFilter
     }
 }
 ```
+#### Pagination
+If you want to paginate your query and keep the url query string without having to use:
+```php
+{!! $pages->appends(Input::except('page'))->render() !!}
+```
+The `paginateFilter()` and `simplePaginateFilter()` methods accept the same input as [Laravel's paginator](https://laravel.com/docs/master/pagination#basic-usage) and returns the respective paginator.
+```php
+class UserController extends Controller
+{
+	public function index(Request $request)
+    {
+        $users = User::filter($request->all())->paginateFilter();
+        
+        return view('users.index', compact('users'));
+    }
+```
+OR:
+```php
+    public function simpleIndex(Request $request)
+    {
+        $users = User::filter($request->all())->paginateSimpleFilter();
+        
+        return view('users.index', compact('users'));
+    }
+}
+```
+In your view `$users->render()` will return pagination links as it normally would but with the original query string with empty input ignored.
+
 # Contributing
 Any contributions welcome!
