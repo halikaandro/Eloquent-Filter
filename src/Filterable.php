@@ -11,7 +11,7 @@ trait Filterable
      */
     protected $filtered = [];
 
-    public function scopeFilter($query, array $input)
+    public function scopeFilter($query, array $input = [])
     {
         // Resolve the current Model's filter
         $filter = config('eloquentfilter.namespace') . class_basename($this) . 'Filter';
