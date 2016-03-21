@@ -87,8 +87,8 @@ class ModelFilter
     public function handle()
     {
         // Filter global methods
-        if(method_exists($this, 'global'))
-            $this->global();
+        if(method_exists($this, 'setup'))
+            $this->setup();
 
         // Run input filters
         $this->filterInput();

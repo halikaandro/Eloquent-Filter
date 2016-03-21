@@ -121,7 +121,7 @@ Where `User` is the Eloquent Model you are creating the filter for.  This will c
 Define the filter logic based on the camel cased input key passed to the `filter()` method.
 
 - Empty strings are ignored
-- `global()` will be called regardless of input
+- `setup()` will be called regardless of input
 - `_id` is dropped from the end of the input to define the method so filtering `user_id` would use the `user()` method
 - Input without a corresponding filter method are ignored
 - The value of the key is injected into the method
@@ -160,7 +160,7 @@ class UserFilter extends ModelFilter
         return $this->where('mobile_phone', 'LIKE', "$phone%");
     }
 
-	public function global()
+	public function setup()
     {
         $this->onlyShowDeletedForAdmins();
     }
@@ -176,7 +176,7 @@ class UserFilter extends ModelFilter
 ```
 > Note:  In the above example if you do not want `_id` dropped from the end of the input you can set `protected $drop_id = false` on your filter class.  Doing this would allow you to have a `company()` filter method as well as a `companyId()` filter method.
 
-> Note: In the example above all methods inside `global()` will be called every time `filter()` is called on the model
+> Note: In the example above all methods inside `setup()` will be called every time `filter()` is called on the model
 
 ### Applying The Filter To A Model
 
