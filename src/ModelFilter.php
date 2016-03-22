@@ -152,7 +152,7 @@ class ModelFilter
     {
         $relatedModel = $this->query->getModel()->{$related}()->getRelated();
 
-        $filterClass = __NAMESPACE__ . '\\' . class_basename($relatedModel) . 'Filter';
+        $filterClass = config('eloquentfilter.namespace') . class_basename($relatedModel) . 'Filter';
 
         with(new $filterClass($this->query, $filterableInput))->handle();
     }
