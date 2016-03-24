@@ -1,20 +1,21 @@
-<?php namespace EloquentFilter;
+<?php
+
+namespace EloquentFilter;
 
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
-
 
 class ModelFilter
 {
     /**
      * Related Models that have ModelFilters as well as the method on the ModelFilter
-     * As [relatedModel => [method1, method2]]
+     * As [relatedModel => [method1, method2]].
      *
      * @var array
      */
     public $relations = [];
 
     /**
-     * Array of input to filter
+     * Array of input to filter.
      *
      * @var array
      */
@@ -26,7 +27,7 @@ class ModelFilter
     protected $query;
 
     /**
-     * Drop `_id` from the end of input keys when referencing methods
+     * Drop `_id` from the end of input keys when referencing methods.
      *
      * @var bool
      */
@@ -34,7 +35,7 @@ class ModelFilter
 
     /**
      * Tables already joined in the query to filter by the joined column instead of using
-     *  ->whereHas to save a little bit of resources
+     *  ->whereHas to save a little bit of resources.
      *
      * @var null
      */
@@ -53,7 +54,7 @@ class ModelFilter
     }
 
     /**
-     * Handle calling methods on the query object
+     * Handle calling methods on the query object.
      *
      * @param $method
      * @param $args
@@ -66,29 +67,29 @@ class ModelFilter
     }
 
     /**
-     * Remove empty strings from the input array
+     * Remove empty strings from the input array.
      *
      * @param $input
      * @return array
      */
     public function removeEmptyInput($input)
     {
-        return array_where($input, function ($key, $val)
-        {
+        return array_where($input, function ($key, $val) {
             return $val != '';
         });
     }
 
     /**
-     * Handle all filters
+     * Handle all filters.
      *
      * @return QueryBuilder
      */
     public function handle()
     {
         // Filter global methods
-        if(method_exists($this, 'setup'))
+        if (method_exists($this, 'setup')) {
             $this->setup();
+        }
 
         // Run input filters
         $this->filterInput();
@@ -99,41 +100,36 @@ class ModelFilter
     }
 
     /**
-     * Filter with input array
+     * Filter with input array.
      */
     public function filterInput()
     {
-        foreach ($this->input as $key => $val)
-        {
+        foreach ($this->input as $key => $val) {
             // Call all local methods on filter
             $method = camel_case($this->drop_id ? preg_replace('/^(.*)_id$/', '$1', $key) : $key);
 
-            if (method_exists($this, $method))
-            {
+            if (method_exists($this, $method)) {
                 call_user_func([$this, $method], $val);
             }
         }
     }
 
     /**
-     * Filter relationships defined in $this->relations array
+     * Filter relationships defined in $this->relations array.
      * @return $this
      */
     public function filterRelations()
     {
         // No need to filer if we dont have any relations
-        if (count($this->relations) === 0)
+        if (count($this->relations) === 0) {
             return $this;
+        }
 
-        foreach ($this->relations as $related => $fields)
-        {
-            if (count($filterableInput = array_only($this->input, $fields)) > 0)
-            {
-                if ($this->relationIsJoined($related))
-                {
+        foreach ($this->relations as $related => $fields) {
+            if (count($filterableInput = array_only($this->input, $fields)) > 0) {
+                if ($this->relationIsJoined($related)) {
                     $this->filterJoinedRelation($related, $filterableInput);
-                } else
-                {
+                } else {
                     $this->filterUnjoinedRelation($related, $filterableInput);
                 }
             }
@@ -143,7 +139,7 @@ class ModelFilter
     }
 
     /**
-     * Run the filter on models that already have their tables joined
+     * Run the filter on models that already have their tables joined.
      *
      * @param $related
      * @param $filterableInput
@@ -152,13 +148,13 @@ class ModelFilter
     {
         $relatedModel = $this->query->getModel()->{$related}()->getRelated();
 
-        $filterClass = config('eloquentfilter.namespace') . class_basename($relatedModel) . 'Filter';
+        $filterClass = config('eloquentfilter.namespace').class_basename($relatedModel).'Filter';
 
         with(new $filterClass($this->query, $filterableInput))->handle();
     }
 
     /**
-     * Gets all the joined tables
+     * Gets all the joined tables.
      *
      * @return array
      */
@@ -166,10 +162,8 @@ class ModelFilter
     {
         $joins = [];
 
-        if (is_array($queryJoins = $this->query->getQuery()->joins))
-        {
-            $joins = array_map(function ($join)
-            {
+        if (is_array($queryJoins = $this->query->getQuery()->joins)) {
+            $joins = array_map(function ($join) {
                 return $join->table;
             }, $queryJoins);
         }
@@ -178,21 +172,22 @@ class ModelFilter
     }
 
     /**
-     * Checks if the relation to filter's table is already joined
+     * Checks if the relation to filter's table is already joined.
      *
      * @param $relation
-     * @return boolean
+     * @return bool
      */
     public function relationIsJoined($relation)
     {
-        if (is_null($this->_joinedTables))
+        if (is_null($this->_joinedTables)) {
             $this->_joinedTables = $this->getJoinedTables();
+        }
 
         return in_array($this->getRelatedTable($relation), $this->_joinedTables);
     }
 
     /**
-     * Get the table name from a relationship
+     * Get the table name from a relationship.
      *
      * @param $relation
      * @return string
@@ -203,21 +198,20 @@ class ModelFilter
     }
 
     /**
-     * Filters by a relationship that isnt joined by using that relation's ModelFilter
+     * Filters by a relationship that isnt joined by using that relation's ModelFilter.
      *
      * @param $related
      * @param $filterableInput
      */
     public function filterUnjoinedRelation($related, $filterableInput)
     {
-        $this->query->whereHas($related, function ($q) use ($filterableInput)
-        {
+        $this->query->whereHas($related, function ($q) use ($filterableInput) {
             return $q->filter($filterableInput);
         });
     }
 
     /**
-     * Retrieve input by key or all input as array
+     * Retrieve input by key or all input as array.
      *
      * @param null $key
      * @param null $default
@@ -225,8 +219,9 @@ class ModelFilter
      */
     public function input($key = null, $default = null)
     {
-        if (is_null($key))
+        if (is_null($key)) {
             return $this->input;
+        }
 
         return isset($this->input[$key]) ? $this->input[$key] : $default;
     }

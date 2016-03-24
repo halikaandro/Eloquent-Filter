@@ -1,16 +1,16 @@
 <?php
 
-return array(
+return [
 
     /*
      |--------------------------------------------------------------------------
      | Eloquent Filter Settings
      |--------------------------------------------------------------------------
      |
-     | This is the namespace all you Eloquent Model Filters will reside     
+     | This is the namespace all you Eloquent Model Filters will reside
      |
      */
 
-    'namespace' => "App\\ModelFilters\\",
+    'namespace' => 'App\\ModelFilters\\',
 
-);
+];
