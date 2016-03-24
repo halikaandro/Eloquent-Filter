@@ -74,9 +74,15 @@ class ModelFilter
      */
     public function removeEmptyInput($input)
     {
-        return array_where($input, function ($key, $val) {
-            return $val != '';
-        });
+        $filterableInput = [];
+        
+        foreach ($input as $key => $val) {
+            if($val !== '') {
+                $filterableInput[$key] = $val;
+            }
+        }
+
+        return $filterableInput;
     }
 
     /**
