@@ -1,11 +1,13 @@
-<?php namespace EloquentFilter;
+<?php
+
+namespace EloquentFilter;
 
 trait Filterable
 {
     protected $filter;
 
     /**
-     * Array of input used to filter the query 
+     * Array of input used to filter the query.
      *
      * @var array
      */
@@ -14,7 +16,7 @@ trait Filterable
     public function scopeFilter($query, array $input = [])
     {
         // Resolve the current Model's filter
-        $filter = config('eloquentfilter.namespace') . class_basename($this) . 'Filter';
+        $filter = config('eloquentfilter.namespace').class_basename($this).'Filter';
 
         $modelFilter = new $filter($query, $input);
 
@@ -26,7 +28,7 @@ trait Filterable
     }
 
     /**
-     * Paginate the given query with url query params appended
+     * Paginate the given query with url query params appended.
      *
      * @param  int $perPage
      * @param  array $columns
@@ -40,8 +42,7 @@ trait Filterable
     {
         $paginator = $query->paginate($perPage, $columns, $pageName, $page);
 
-        foreach ($this->filtered as $key => $val)
-        {
+        foreach ($this->filtered as $key => $val) {
             $paginator->addQuery($key, $val);
         }
 
@@ -49,7 +50,7 @@ trait Filterable
     }
 
     /**
-     * Paginate the given query with url query params appended
+     * Paginate the given query with url query params appended.
      *
      * @param  int $perPage
      * @param  array $columns
@@ -63,13 +64,10 @@ trait Filterable
     {
         $paginator = $query->simplePaginate($perPage, $columns, $pageName);
 
-        foreach ($this->filtered as $key => $val)
-        {
+        foreach ($this->filtered as $key => $val) {
             $paginator->addQuery($key, $val);
         }
 
         return $paginator;
     }
-
-
 }

@@ -1,4 +1,6 @@
-<?php namespace EloquentFilter\Commands;
+<?php
+
+namespace EloquentFilter\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
@@ -22,7 +24,7 @@ class MakeEloquentFilter extends Command
     protected $description = 'Create A New Eloquent Model Filter';
 
     /**
-     * Class to create
+     * Class to create.
      *
      * @var array|string
      */
@@ -55,17 +57,16 @@ class MakeEloquentFilter extends Command
     public function handle()
     {
         $this->makeClassName()->compileStub();
-        $this->info(class_basename($this->class) . ' Created Successfully!');
+        $this->info(class_basename($this->class).' Created Successfully!');
     }
 
     public function compileStub()
     {
-        if ($this->files->exists($path = $this->getPath()))
-        {
-            $this->error("\n\n\t" . $path . ' Already Exists!' . "\n");
+        if ($this->files->exists($path = $this->getPath())) {
+            $this->error("\n\n\t".$path.' Already Exists!'."\n");
             die;
         }
-        $tmp = $this->applyValuesToStub($this->files->get(__DIR__ . '/../stubs/modelfilter.stub'));
+        $tmp = $this->applyValuesToStub($this->files->get(__DIR__.'/../stubs/modelfilter.stub'));
         $this->files->put($path, $tmp);
     }
 
@@ -73,14 +74,14 @@ class MakeEloquentFilter extends Command
     {
         $className = class_basename($this->class);
         $search = ['{{class}}', '{{namespace}}'];
-        $replace = [$className, str_replace('\\' . $className, '', $this->class)];
+        $replace = [$className, str_replace('\\'.$className, '', $this->class)];
 
         return str_replace($search, $replace, $stub);
     }
 
     public function getPath()
     {
-        return app_path(str_replace([$this->getAppNamespace(), '\\'], ['', '/'], $this->class . '.php'));
+        return app_path(str_replace([$this->getAppNamespace(), '\\'], ['', '/'], $this->class.'.php'));
     }
 
     /**
@@ -91,14 +92,13 @@ class MakeEloquentFilter extends Command
      */
     protected function makeDirectory($path)
     {
-        if (!$this->files->isDirectory(dirname($path)))
-        {
+        if (! $this->files->isDirectory(dirname($path))) {
             $this->files->makeDirectory(dirname($path), 0777, true, true);
         }
     }
 
     /**
-     * Create Filter Class Name
+     * Create Filter Class Name.
      *
      * @return $this
      */
@@ -106,18 +106,16 @@ class MakeEloquentFilter extends Command
     {
         $parts = explode('\\', $this->argument('name'));
         $className = array_pop($parts);
-        $ns = count($parts) > 0 ? implode('\\', $parts) . "\\" : '';
+        $ns = count($parts) > 0 ? implode('\\', $parts).'\\' : '';
 
-        $this->class = config('eloquentfilter.namespace') . $ns . studly_case($className);
+        $this->class = config('eloquentfilter.namespace').$ns.studly_case($className);
 
-        if (substr($this->class, -6, 6) !== 'Filter')
-        {
-            $this->class = (substr($this->class, -6, 6) === 'filter' ? str_replace('filter', '', $this->class) : $this->class) . 'Filter';
+        if (substr($this->class, -6, 6) !== 'Filter') {
+            $this->class = (substr($this->class, -6, 6) === 'filter' ? str_replace('filter', '', $this->class) : $this->class).'Filter';
         }
 
-        if (class_exists($this->class))
-        {
-            $this->error("\n\n\t" . $this->class . ' Already Exists!' . "\n");
+        if (class_exists($this->class)) {
+            $this->error("\n\n\t".$this->class.' Already Exists!'."\n");
             die;
         }
 

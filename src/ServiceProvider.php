@@ -1,10 +1,11 @@
-<?php namespace EloquentFilter;
+<?php
+
+namespace EloquentFilter;
 
 use Illuminate\Support\ServiceProvider as LaravelServiceProvider;
 
 class ServiceProvider extends LaravelServiceProvider
 {
-
     /**
      * Bootstrap any application services.
      *
@@ -16,6 +17,7 @@ class ServiceProvider extends LaravelServiceProvider
             __DIR__.'/../config/eloquentfilter.php' => config_path('eloquentfilter.php'),
         ]);
     }
+
     /**
      * Register any application services.
      *
