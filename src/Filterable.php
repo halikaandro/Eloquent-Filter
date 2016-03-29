@@ -13,11 +13,22 @@ trait Filterable
      */
     protected $filtered = [];
 
-    public function scopeFilter($query, array $input = [])
+    /**
+     * Creates local scope to run the filter
+     *
+     * @param $query
+     * @param array $input
+     * @param null|string $filter
+     * @return mixed
+     */
+    public function scopeFilter($query, array $input = [], $filter = null)
     {
         // Resolve the current Model's filter
-        $filter = config('eloquentfilter.namespace').class_basename($this).'Filter';
+        if ($filter === null) {
+            $filter = method_exists($this, 'modelFilter') ? $this->modelFilter() : $this->provideFilter();
+        }
 
+        // Create the model filter instance
         $modelFilter = new $filter($query, $input);
 
         // Set the input that was used in the filter (this will exclude empty strings)
@@ -55,7 +66,6 @@ trait Filterable
      * @param  int $perPage
      * @param  array $columns
      * @param  string $pageName
-     * @param  int|null $page
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
      *
      * @throws \InvalidArgumentException
@@ -69,5 +79,20 @@ trait Filterable
         }
 
         return $paginator;
+    }
+
+    /**
+     * Returns ModelFilter class to be instantiated
+     *
+     * @param null|string $filter
+     * @return null|string
+     */
+    public function provideFilter($filter = null)
+    {
+        if ($filter === null) {
+            $filter = config('eloquentfilter.namespace', 'App\\ModelFilters\\').class_basename($this).'Filter';
+        }
+
+        return $filter;
     }
 }
