@@ -14,7 +14,7 @@ trait Filterable
     protected $filtered = [];
 
     /**
-     * Creates local scope to run the filter
+     * Creates local scope to run the filter.
      *
      * @param $query
      * @param array $input
@@ -82,7 +82,7 @@ trait Filterable
     }
 
     /**
-     * Returns ModelFilter class to be instantiated
+     * Returns ModelFilter class to be instantiated.
      *
      * @param null|string $filter
      * @return null|string
