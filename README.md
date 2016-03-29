@@ -91,6 +91,34 @@ class UserController extends Controller
 ```
 composer require tucker-eric/eloquentfilter
 ```
+#### Define the default model filter
+
+Create a public method `modelFilter()` that returns `$this->provideFilter(Your\Model\Filter::class);` in your model.
+
+> Not definining a filter in your model will default the filter to `App\ModelFilters\{Model}Filter`. For example, in our user model the `filter()` method will use the `App\ModelFilters\UserFilter` if not otherwise defined.  `App\ModelFilters` namespace is used if there is no configuration file.
+
+```php
+<?php namespace App;
+
+use EloqentFilter\Filterable;
+use Illuminate\Database\Eloquent\Model;
+
+class User extends Model
+{
+    use Filterable;
+    
+    public function modelFilter()
+    {
+    	return $this->provideFilter(App\ModelFilters\CustomFilters\CustomUserFilter::class);
+    }
+    
+    //User Class
+}
+```
+
+#### With Configuration File (Optional)
+> Registering the service provider will give you access to the `php artisan model:filter {model}` command as well as allow you to publish the configuration file.  Registering the service provider is not required as long as you have a `modelFilter()` method on all models using the `EloquentFilter\Filterable` trait OR all your model filters reside in the `App\ModelFilters` namespace and follow the naming convention of `{Model}Filter`
+
 After installing the Eloquent Filter library, register the `EloquentFilter\ServiceProvider::class` in your `config/app.php` configuration file:
 ```php
 'providers' => [
@@ -108,14 +136,17 @@ In the `app/eloquentfilter.php` config file.  Set the namespace your model filte
 'namespace' => "App\\ModelFilters\\",
 ```
 
-## Usage
+#### Generating The Filter
+> Only available if you have registered `EloquentFilter\ServiceProvider::class` in the providers array in your `config/app.php'
 
-### Generating The Filter
 You can create a model filter with the following artisan command:
 ```bash
 php artisan model:filter User
 ```
 Where `User` is the Eloquent Model you are creating the filter for.  This will create `app/ModelFilters/UserFilter.php`
+
+
+## Usage
 
 ### Defining The Filter Logic
 Define the filter logic based on the camel cased input key passed to the `filter()` method.
@@ -343,6 +374,35 @@ OR:
 }
 ```
 In your view `$users->render()` will return pagination links as it normally would but with the original query string with empty input ignored.
+
+#### Dynamic Filters
+Sometimes you need a dynamic way to change filters on a model or maybe use multiple filters on a model.  To define a dynamic filter just pass the filter as the second parameter of the `filter()` method:
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+
+use App\Http\Requests;
+use App\User;
+use App\ModelFilters\Admin\UserFilter as AdminFilter;
+use App\ModelFilters\User\UserFilter as BasicUserFilter;
+use Auth;
+
+class UserController extends Controller
+{
+	public function index(Request $request)
+    {
+    	$userFilter = Auth::user()->isAdmin() ? AdminFilter::class : BasicUserFilter::class;
+        
+        return User::filter($request->all(), $userFilter)->get();
+    }
+}
+
+```
+
 
 # Contributing
 Any contributions welcome!
