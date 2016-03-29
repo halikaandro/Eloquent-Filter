@@ -75,9 +75,9 @@ class ModelFilter
     public function removeEmptyInput($input)
     {
         $filterableInput = [];
-        
+
         foreach ($input as $key => $val) {
-            if($val !== '') {
+            if ($val !== '') {
                 $filterableInput[$key] = $val;
             }
         }
