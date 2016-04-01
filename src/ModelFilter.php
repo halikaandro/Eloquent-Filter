@@ -2,6 +2,7 @@
 
 namespace EloquentFilter;
 
+use App\Models\ModelFilters\ContactFilter;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 
 class ModelFilter
@@ -42,15 +43,24 @@ class ModelFilter
     private $_joinedTables = null;
 
     /**
+     * This is to be able to bypass relations if we are filtering a joined table
+     *
+     * @var bool
+     */
+    protected $relationsEnabled;
+
+    /**
      * ModelFilter constructor.
      *
      * @param $query
      * @param array $input
+     * @param bool $relationsEnabled
      */
-    public function __construct($query, array $input)
+    public function __construct($query, array $input, $relationsEnabled = true)
     {
         $this->query = $query;
         $this->input = $this->removeEmptyInput($input);
+        $this->relationsEnabled = $relationsEnabled;
     }
 
     /**
@@ -127,7 +137,7 @@ class ModelFilter
     public function filterRelations()
     {
         // No need to filer if we dont have any relations
-        if (count($this->relations) === 0) {
+        if (!$this->relationsEnabled || count($this->relations) === 0) {
             return $this;
         }
 
@@ -156,7 +166,8 @@ class ModelFilter
 
         $filterClass = config('eloquentfilter.namespace').class_basename($relatedModel).'Filter';
 
-        with(new $filterClass($this->query, $filterableInput))->handle();
+        // Disable querying a joined tables relations
+        with(new $filterClass($this->query, $filterableInput, false))->handle();
     }
 
     /**
@@ -230,5 +241,30 @@ class ModelFilter
         }
 
         return isset($this->input[$key]) ? $this->input[$key] : $default;
+    }
+
+    /**
+     * Disable querying relations (Mainly for joined tables as the related model isn't queried)
+     *
+     * @return $this
+     */
+    public function disableRelations()
+    {
+        $this->relationsEnabled = false;
+
+        return $this;
+    }
+
+
+    /**
+     * Enable querying relations
+     *
+     * @return $this
+     */
+    public function enableRelations()
+    {
+        $this->relationsEnabled = true;
+
+        return $this;
     }
 }
