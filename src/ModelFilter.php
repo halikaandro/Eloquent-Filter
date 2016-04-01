@@ -2,7 +2,6 @@
 
 namespace EloquentFilter;
 
-use App\Models\ModelFilters\ContactFilter;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 
 class ModelFilter
@@ -43,7 +42,7 @@ class ModelFilter
     private $_joinedTables = null;
 
     /**
-     * This is to be able to bypass relations if we are filtering a joined table
+     * This is to be able to bypass relations if we are filtering a joined table.
      *
      * @var bool
      */
@@ -137,7 +136,7 @@ class ModelFilter
     public function filterRelations()
     {
         // No need to filer if we dont have any relations
-        if (!$this->relationsEnabled || count($this->relations) === 0) {
+        if (! $this->relationsEnabled || count($this->relations) === 0) {
             return $this;
         }
 
@@ -244,7 +243,7 @@ class ModelFilter
     }
 
     /**
-     * Disable querying relations (Mainly for joined tables as the related model isn't queried)
+     * Disable querying relations (Mainly for joined tables as the related model isn't queried).
      *
      * @return $this
      */
@@ -255,9 +254,8 @@ class ModelFilter
         return $this;
     }
 
-
     /**
-     * Enable querying relations
+     * Enable querying relations.
      *
      * @return $this
      */
