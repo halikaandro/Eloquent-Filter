@@ -7,9 +7,9 @@ use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 /**
  * @method  QueryBuilder where(string $column, string $operator = null, mixed $value = null, string $boolean = 'and')
  * @method  QueryBuilder has( string $relation, string $operator = '>=', int $count = 1, string $boolean = 'and', \Closure $callback = null)
- * @method  QueryBuilder doesntHave( string $relation, string $boolean = 'and', Closure $callback = null)
- * @method  QueryBuilder whereHas( string $relation, Closure $callback, string $operator = '>=', int $count = 1)
- * @method  QueryBuilder whereDoesntHave( string $relation, Closure $callback = null)
+ * @method  QueryBuilder doesntHave( string $relation, string $boolean = 'and', \Closure $callback = null)
+ * @method  QueryBuilder whereHas( string $relation, \Closure $callback, string $operator = '>=', int $count = 1)
+ * @method  QueryBuilder whereDoesntHave( string $relation, \Closure $callback = null)
  * @method  QueryBuilder selectRaw( string $expression, array $bindings = array())
  * @method  QueryBuilder selectSub( \Closure|QueryBuilder|string $query, string $as)
  * @method  QueryBuilder whereRaw( string $sql, mixed $bindings = array(), string $boolean = 'and')
@@ -24,6 +24,9 @@ use Illuminate\Database\Eloquent\Builder as QueryBuilder;
  * @method  QueryBuilder whereDay( string $column, string $operator, int $value, string $boolean = 'and')
  * @method  QueryBuilder whereMonth( string $column, string $operator, int $value, string $boolean = 'and')
  * @method  QueryBuilder whereYear( string $column, string $operator, int $value, string $boolean = 'and')
+ * @method  QueryBuilder orderBy( string $column, string $direction = 'asc')
+ * @method  QueryBuilder limit( int $value)
+ * @method  QueryBuilder withTrashed()
  */
 class ModelFilter
 {
