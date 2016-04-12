@@ -4,6 +4,27 @@ namespace EloquentFilter;
 
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 
+/**
+ * @method  QueryBuilder where(string $column, string $operator = null, mixed $value = null, string $boolean = 'and')
+ * @method  QueryBuilder has( string $relation, string $operator = '>=', int $count = 1, string $boolean = 'and', \Closure $callback = null)
+ * @method  QueryBuilder doesntHave( string $relation, string $boolean = 'and', Closure $callback = null)
+ * @method  QueryBuilder whereHas( string $relation, Closure $callback, string $operator = '>=', int $count = 1)
+ * @method  QueryBuilder whereDoesntHave( string $relation, Closure $callback = null)
+ * @method  QueryBuilder selectRaw( string $expression, array $bindings = array())
+ * @method  QueryBuilder selectSub( \Closure|QueryBuilder|string $query, string $as)
+ * @method  QueryBuilder whereRaw( string $sql, mixed $bindings = array(), string $boolean = 'and')
+ * @method  QueryBuilder whereBetween( string $column, array $values, string $boolean = 'and', bool $not = false)
+ * @method  QueryBuilder whereNotBetween( string $column, array $values, string $boolean = 'and')
+ * @method  QueryBuilder whereNested( \Closure $callback, string $boolean = 'and')
+ * @method  QueryBuilder whereExists( \Closure $callback, string $boolean = 'and', bool $not = false)
+ * @method  QueryBuilder whereIn( string $column, mixed $values, string $boolean = 'and', bool $not = false)
+ * @method  QueryBuilder whereNotIn( string $column, mixed $values, string $boolean = 'and')
+ * @method  QueryBuilder whereNotNull( string $column, string $boolean = 'and')
+ * @method  QueryBuilder whereDate( string $column, string $operator, int $value, string $boolean = 'and')
+ * @method  QueryBuilder whereDay( string $column, string $operator, int $value, string $boolean = 'and')
+ * @method  QueryBuilder whereMonth( string $column, string $operator, int $value, string $boolean = 'and')
+ * @method  QueryBuilder whereYear( string $column, string $operator, int $value, string $boolean = 'and')
+ */
 class ModelFilter
 {
     /**
