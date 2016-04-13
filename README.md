@@ -3,6 +3,7 @@
 [![Latest Stable Version](https://poser.pugx.org/tucker-eric/eloquentfilter/v/stable)](https://packagist.org/packages/tucker-eric/eloquentfilter)
 [![Total Downloads](https://poser.pugx.org/tucker-eric/eloquentfilter/downloads)](https://packagist.org/packages/tucker-eric/eloquentfilter)
 [![License](https://poser.pugx.org/tucker-eric/eloquentfilter/license)](https://packagist.org/packages/tucker-eric/eloquentfilter)
+[![StyleCI](https://styleci.io/repos/53163405/shield)](https://styleci.io/repos/53163405/)
 
 An Eloquent way to filter Eloquent Models
 
