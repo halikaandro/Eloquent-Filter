@@ -106,12 +106,12 @@ use Illuminate\Database\Eloquent\Model;
 class User extends Model
 {
     use Filterable;
-    
+
     public function modelFilter()
     {
     	return $this->provideFilter(App\ModelFilters\CustomFilters\CustomUserFilter::class);
     }
-    
+
     //User Class
 }
 ```
@@ -156,7 +156,7 @@ Define the filter logic based on the camel cased input key passed to the `filter
 - `_id` is dropped from the end of the input to define the method so filtering `user_id` would use the `user()` method
 - Input without a corresponding filter method are ignored
 - The value of the key is injected into the method
-- All values are accessible through the `$this->input()` method or a single value by key `$this->input($key)` 
+- All values are accessible through the `$this->input()` method or a single value by key `$this->input($key)`
 - All Eloquent Builder methods are accessible in `this` context in the model filter class.
 
 To define methods for the following input:
@@ -176,7 +176,7 @@ class UserFilter extends ModelFilter
     {
         return $this->where('company_id', $id);
     }
-    
+
     public function name($name)
     {
         return $this->where(function($q) use ($name)
@@ -185,7 +185,7 @@ class UserFilter extends ModelFilter
                 ->orWhere('last_name', 'LIKE', "%$name%");
         });
     }
-    
+
     public function mobilePhone($phone)
     {
         return $this->where('mobile_phone', 'LIKE', "$phone%");
@@ -221,7 +221,7 @@ use Illuminate\Database\Eloquent\Model;
 class User extends Model
 {
     use Filterable;
-    
+
     //User Class
 }
 ```
@@ -249,7 +249,7 @@ If I have a `User` that `hasMany` `App\Client::class` my model would look like:
 class User extends Model
 {
     use Filterable;
-    
+
     public function clients()
     {
     	return $this->hasMany(Client::class);
@@ -261,7 +261,7 @@ Let's also say each `App\Client` has belongs to `App\Industry::class`:
 class Client extends Model
 {
     use Filterable;
-    
+
     public function industry()
     {
     	return $this->belongsTo(Industry::class);
@@ -276,7 +276,7 @@ $input = [
 	'industry' => '5'
 ];
 ```
-`UserFilter` with the relation defined so it's able to be queried.  
+`UserFilter` with the relation defined so it's able to be queried.
 ```php
 class UserFilter extends ModelFilter
 {
@@ -290,7 +290,7 @@ class UserFilter extends ModelFilter
 class ClientFilter extends ModelFilter
 {
 	public $relations = [];
-    
+
     public function industry($id)
     {
     	return $this->where('industry_id', $id);
@@ -319,25 +319,25 @@ class UserFilter extends ModelFilter
 	public $relations = [
         'clients' => ['industry'],
     ];
-    
+
 	public function name($name)
     {
     	return $this->where(function($q)
         {
         	return $q->where('first_name', 'LIKE', $name . '%')->orWhere('last_name', 'LIKE', '%' . $name.'%');
-        });    	
+        });
     }
-    
+
     public function lastName($lastName)
     {
     	return $this->where('last_name', 'LIKE', '%' . $lastName);
     }
-    
+
     public function company($id)
     {
     	return $this->where('company_id',$id);
     }
-    
+
     public function roles($ids)
     {
     	return $this->whereHas('roles', function($query) use ($ids)
@@ -359,7 +359,7 @@ class UserController extends Controller
 	public function index(Request $request)
     {
         $users = User::filter($request->all())->paginateFilter();
-        
+
         return view('users.index', compact('users'));
     }
 ```
@@ -368,7 +368,7 @@ OR:
     public function simpleIndex(Request $request)
     {
         $users = User::filter($request->all())->paginateSimpleFilter();
-        
+
         return view('users.index', compact('users'));
     }
 }
@@ -396,7 +396,7 @@ class UserController extends Controller
 	public function index(Request $request)
     {
     	$userFilter = Auth::user()->isAdmin() ? AdminFilter::class : BasicUserFilter::class;
-        
+
         return User::filter($request->all(), $userFilter)->get();
     }
 }
