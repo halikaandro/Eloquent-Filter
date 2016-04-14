@@ -146,6 +146,11 @@ php artisan model:filter User
 ```
 Where `User` is the Eloquent Model you are creating the filter for.  This will create `app/ModelFilters/UserFilter.php`
 
+The command also supports psr-4 namespacing for creating filters.  You just need to make sure you escape the backslashes in the class name.  For example:
+```bash
+php artisan model:filter AdminFilters\\User
+```
+This would create `app/ModelFilters/AdminFilters/UserFilter.php`
 
 ## Usage
 
