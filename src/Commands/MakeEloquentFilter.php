@@ -66,6 +66,7 @@ class MakeEloquentFilter extends Command
             $this->error("\n\n\t".$path.' Already Exists!'."\n");
             die;
         }
+        $this->makeDirectory($path);
         $tmp = $this->applyValuesToStub($this->files->get(__DIR__.'/../stubs/modelfilter.stub'));
         $this->files->put($path, $tmp);
     }
