@@ -353,6 +353,25 @@ class UserFilter extends ModelFilter
     }
 }
 ```
+##### Adding Relation Values To Filter
+Sometimes, based on the value of a parameter you may need to push data to a relation filter.  The `push()` method does just this.
+It accepts one argument as an array of key value pairs or to arguments as a key value pair `push($key, $value)`.
+Related models are filtered AFTER all local values have been executed you can use this method in any filter method.
+This avoids having to query a related table more than once.  For Example:
+```php
+public $relations = [
+    'clients' => ['industry', 'status'],
+];
+
+public function statusType($type)
+{
+    if($type === 'all') {
+        $this->push('status', 'all');    
+    }
+}
+```
+The above example will pass `'all'` to the `stats()` method on the `clients` relation of the model.
+> Calling the `push()` method in the `setup()` method will allow you to push values to the input for filter it's called on
 #### Pagination
 If you want to paginate your query and keep the url query string without having to use:
 ```php
