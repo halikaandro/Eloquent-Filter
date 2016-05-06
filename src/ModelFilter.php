@@ -292,14 +292,14 @@ class ModelFilter
 
     /**
      * Add values to filter by if called in setup().
-     * Will ONLY filter relations if called on additional method
-     * 
+     * Will ONLY filter relations if called on additional method.
+     *
      * @param $key
      * @param null $value
      */
     public function push($key, $value = null)
     {
-        if(is_array($key)) {
+        if (is_array($key)) {
             $this->input = array_merge($this->input, $key);
         } else {
             $this->input[$key] = $value;
