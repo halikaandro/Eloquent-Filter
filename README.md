@@ -366,7 +366,7 @@ public $relations = [
 public function statusType($type)
 {
     if($type === 'all') {
-        $this->push('status', 'all');    
+        $this->push('status', 'all');
     }
 }
 ```
