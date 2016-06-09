@@ -431,7 +431,3 @@ class UserController extends Controller
 
 # Contributing
 Any contributions welcome!
-
-
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/Tucker-Eric/eloquentfilter/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
-
