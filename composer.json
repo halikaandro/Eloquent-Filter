@@ -5,6 +5,7 @@
     "laravel",
     "eloquent",
     "model",
+    "search",
     "query",
     "filter"
   ],
