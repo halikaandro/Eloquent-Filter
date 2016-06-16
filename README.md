@@ -292,6 +292,7 @@ class UserFilter extends ModelFilter
 }
 ```
 `ClientFilter` with the `industry` method that's used to filter:
+> **Note:** The `$relations` array should identify the relation and the input key to filter by that relation. Just as the `ModelFilter` works, this will access the camelCased method on that relation's filter. If the above example was using the key `industry_type` for the input the relations array would be `$relations = ['clients' => ['industry_type']]` and the `ClientFilter` would have the method `industryType()`.
 ```php
 class ClientFilter extends ModelFilter
 {
