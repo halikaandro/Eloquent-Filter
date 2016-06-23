@@ -19,13 +19,13 @@ trait Filterable
      * @param $query
      * @param array $input
      * @param null|string $filter
-     * @return mixed
+     * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopeFilter($query, array $input = [], $filter = null)
     {
         // Resolve the current Model's filter
         if ($filter === null) {
-            $filter = method_exists($this, 'modelFilter') ? $this->modelFilter() : $this->provideFilter();
+            $filter = $this->getModelFilterClass();
         }
 
         // Create the model filter instance
@@ -85,7 +85,7 @@ trait Filterable
      * Returns ModelFilter class to be instantiated.
      *
      * @param null|string $filter
-     * @return null|string
+     * @return ModelFilter
      */
     public function provideFilter($filter = null)
     {
@@ -94,5 +94,15 @@ trait Filterable
         }
 
         return $filter;
+    }
+
+    /**
+     * Returns the ModelFilter for the current model
+     *
+     * @return ModelFilter
+     */
+    public function getModelFilterClass()
+    {
+        return method_exists($this, 'modelFilter') ? $this->modelFilter() : $this->provideFilter();
     }
 }

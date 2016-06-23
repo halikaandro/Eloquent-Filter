@@ -187,7 +187,7 @@ class ModelFilter
     {
         $relatedModel = $this->query->getModel()->{$related}()->getRelated();
 
-        $filterClass = config('eloquentfilter.namespace').class_basename($relatedModel).'Filter';
+        $filterClass = $relatedModel->getModelFilterClass();
 
         // Disable querying a joined tables relations
         with(new $filterClass($this->query, $filterableInput, false))->handle();
