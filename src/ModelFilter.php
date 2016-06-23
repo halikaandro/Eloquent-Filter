@@ -336,7 +336,7 @@ class ModelFilter
      */
     public function dropIdSuffix($bool = null)
     {
-        if($bool === null) {
+        if ($bool === null) {
             return $this->drop_id;
         }
 

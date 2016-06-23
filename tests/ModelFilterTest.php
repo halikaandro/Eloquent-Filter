@@ -23,7 +23,7 @@ class ModelFilterTest extends TestCase
     {
         $this->builder = m::mock('builder');
         $this->filter = new ModelFilter($this->builder, []);
-        $this->config = require __DIR__."/config.php";
+        $this->config = require __DIR__.'/config.php';
         $this->testInput = $this->config['test_input'];
     }
 
@@ -31,7 +31,7 @@ class ModelFilterTest extends TestCase
     {
         $filteredInput = $this->filter->removeEmptyInput($this->testInput);
         // Remove empty strings from the input
-        foreach($filteredInput as $val) {
+        foreach ($filteredInput as $val) {
             $this->assertNotEquals($val, '');
         }
     }
@@ -45,13 +45,13 @@ class ModelFilterTest extends TestCase
         // Test with inserting array
         $this->filter->push([
             'company_id' => '2',
-            'roles'      => ['1','4','7']
+            'roles'      => ['1', '4', '7'],
             ]);
 
         $this->assertEquals($this->filter->input(), [
             'name'       => 'er',
             'company_id' => '2',
-            'roles'      => ['1','4','7']
+            'roles'      => ['1', '4', '7'],
         ]);
     }
 
@@ -81,7 +81,7 @@ class ModelFilterTest extends TestCase
         $this->filter->push($filteredInput);
 
         // All keys are in tact
-        foreach($this->testInput as $key => $val) {
+        foreach ($this->testInput as $key => $val) {
             $this->assertEquals($this->filter->input($key), $this->testInput[$key]);
         }
 
@@ -100,7 +100,7 @@ class ModelFilterTest extends TestCase
         $input = [
             'name'               => 'name',
             'first_name'         => 'firstName',
-            'first_or_last_name' => 'firstOrLastName'
+            'first_or_last_name' => 'firstOrLastName',
         ];
 
         foreach ($input as $key => $method) {
