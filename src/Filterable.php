@@ -97,7 +97,7 @@ trait Filterable
     }
 
     /**
-     * Returns the ModelFilter for the current model
+     * Returns the ModelFilter for the current model.
      *
      * @return ModelFilter
      */
