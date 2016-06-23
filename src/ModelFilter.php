@@ -139,22 +139,33 @@ class ModelFilter
     }
 
     /**
+     * Get filter method to call on input.
+     *
+     * @return string
+     */
+    public function getFilterMethod($key)
+    {
+        return camel_case($this->drop_id ? preg_replace('/^(.*)_id$/', '$1', $key) : $key);
+    }
+
+    /**
      * Filter with input array.
      */
     public function filterInput()
     {
-        foreach ($this->input as $key => $val) {
+        foreach ($this->input() as $key => $val) {
             // Call all local methods on filter
-            $method = camel_case($this->drop_id ? preg_replace('/^(.*)_id$/', '$1', $key) : $key);
+            $method = $this->getFilterMethod($key);
 
             if (method_exists($this, $method)) {
-                call_user_func([$this, $method], $val);
+                $this->{$method}($val);
             }
         }
     }
 
     /**
      * Filter relationships defined in $this->relations array.
+     *
      * @return $this
      */
     public function filterRelations()
@@ -314,5 +325,21 @@ class ModelFilter
         } else {
             $this->input[$key] = $value;
         }
+    }
+
+    /**
+     * Set to drop `_id` from input. Mainly for testing.
+     *
+     * @param null $bool
+     *
+     * @return bool
+     */
+    public function dropIdSuffix($bool = null)
+    {
+        if($bool === null) {
+            return $this->drop_id;
+        }
+
+        return $this->drop_id = $bool;
     }
 }
