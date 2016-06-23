@@ -160,7 +160,7 @@ class ModelFilter
     public function filterRelations()
     {
         // No need to filer if we dont have any relations
-        if (! $this->relationsEnabled || count($this->relations) === 0) {
+        if (! $this->relationsEnabled() || count($this->relations) === 0) {
             return $this;
         }
 
@@ -288,6 +288,16 @@ class ModelFilter
         $this->relationsEnabled = true;
 
         return $this;
+    }
+
+    /**
+     * Checks if filtering by relations is enabled.
+     *
+     * @return bool
+     */
+    public function relationsEnabled()
+    {
+        return $this->relationsEnabled;
     }
 
     /**
