@@ -16,7 +16,7 @@ Lets say we want to return a list of users filtered by multiple parameters. When
 ```php
 [
 	'name' 		 => 'er',
-    'last_name'  => ''
+    'last_name'  => '',
     'company_id' => '2',
     'roles'      => ['1','4','7'],
     'industry'   => '5'
