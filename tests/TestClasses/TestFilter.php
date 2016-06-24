@@ -1,5 +1,7 @@
 <?php
 
+namespace TestClasses;
+
 use EloquentFilter\ModelFilter;
 
 class TestFilter extends ModelFilter
