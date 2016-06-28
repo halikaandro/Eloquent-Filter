@@ -79,7 +79,7 @@ class ModelFilter
      * @param array $input
      * @param bool $relationsEnabled
      */
-    public function __construct($query, array $input, $relationsEnabled = true)
+    public function __construct($query, array $input = [], $relationsEnabled = true)
     {
         $this->query = $query;
         $this->input = $this->removeEmptyInput($input);
