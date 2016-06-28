@@ -25,7 +25,8 @@ class ModelFilterChildTest extends TestCase
         $this->assertEquals($client, new Client);
     }
 
-    public function tearDown() {
+    public function tearDown()
+    {
         m::close();
     }
 }
