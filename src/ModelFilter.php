@@ -196,9 +196,7 @@ class ModelFilter
      */
     public function filterJoinedRelation($related, $filterableInput)
     {
-        $relatedModel = $this->query->getModel()->{$related}()->getRelated();
-
-        $filterClass = $relatedModel->getModelFilterClass();
+        $filterClass = $this->getRelatedFilter($related);
 
         // Disable querying a joined tables relations
         with(new $filterClass($this->query, $filterableInput, false))->handle();
@@ -238,6 +236,17 @@ class ModelFilter
     }
 
     /**
+     * Get an empty instance of a related model.
+     *
+     * @param $relation
+     * @return \Illuminate\Database\Eloquent\Model
+     */
+    public function getRelatedModel($relation)
+    {
+        return $this->query->getModel()->{$relation}()->getRelated();
+    }
+
+    /**
      * Get the table name from a relationship.
      *
      * @param $relation
@@ -245,8 +254,20 @@ class ModelFilter
      */
     public function getRelatedTable($relation)
     {
-        return $this->query->getModel()->{$relation}()->getRelated()->getTable();
+        return $this->getRelatedModel($relation)->getTable();
     }
+
+    /**
+     * Get the model filter of a related model.
+     *
+     * @param $relation
+     * @return mixed
+     */
+    public function getRelatedFilter($relation)
+    {
+        return $this->getRelatedModel($relation)->getModelFilterClass();
+    }
+
 
     /**
      * Filters by a relationship that isnt joined by using that relation's ModelFilter.
