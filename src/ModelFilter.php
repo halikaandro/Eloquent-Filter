@@ -199,7 +199,7 @@ class ModelFilter
         $filterClass = $this->getRelatedFilter($related);
 
         // Disable querying a joined tables relations
-        with(new $filterClass($this->query, $filterableInput, false))->handle();
+        (new $filterClass($this->query, $filterableInput, false))->handle();
     }
 
     /**
