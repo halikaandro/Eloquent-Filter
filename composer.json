@@ -32,5 +32,10 @@
       "EloquentFilter\\": "src/"
     }
   },
+  "autoload-dev": {
+    "psr-4": {
+        "EloquentFilter\\TestClass\\": "tests/classes"
+    }
+  },
   "minimum-stability": "dev"
 }

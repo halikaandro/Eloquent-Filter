@@ -1,8 +1,10 @@
 <?php
 
+namespace EloquentFilter\TestClass;
+
 use EloquentFilter\ModelFilter;
 
-class TestFilter extends ModelFilter
+class ClientFilter extends ModelFilter
 {
     /**
      * Related Models that have ModelFilters as well as the method on the ModelFilter
