@@ -268,7 +268,6 @@ class ModelFilter
         return $this->getRelatedModel($relation)->getModelFilterClass();
     }
 
-
     /**
      * Filters by a relationship that isnt joined by using that relation's ModelFilter.
      *
