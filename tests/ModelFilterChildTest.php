@@ -50,6 +50,5 @@ class ModelFilterChildTest extends TestCase
     public function testGetModelFilterClass()
     {
         $this->assertEquals($this->model->getModelFilterClass(), EloquentFilter\TestClass\UserFilter::class);
-
     }
 }
