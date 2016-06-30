@@ -13,8 +13,8 @@ class ModelFilterChildTest extends TestCase
     public function testGetRelatedModel()
     {
         $userMock = m::mock('User');
-        $userQueryMock = m::mock('');
-        $hasManyMock = m::mock('');
+        $userQueryMock = m::mock('Builder');
+        $hasManyMock = m::mock('HasMany');
 
         $userQueryMock->shouldReceive('getModel')->once()->andReturn($userMock);
 
