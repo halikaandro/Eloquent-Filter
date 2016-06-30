@@ -22,7 +22,7 @@ class ModelFilterTest extends TestCase
     public function setUp()
     {
         $this->builder = m::mock('builder');
-        $this->filter = new ModelFilter($this->builder, []);
+        $this->filter = new ModelFilter($this->builder);
         $this->config = require __DIR__.'/config.php';
         $this->testInput = $this->config['test_input'];
     }

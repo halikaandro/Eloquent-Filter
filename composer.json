@@ -31,8 +31,17 @@
   "autoload": {
     "psr-4": {
       "EloquentFilter\\": "src/",
-      "TestClasses\\": "tests/TestClasses"
+      "EloquentFilter\\TestClass\\": "tests/classes/"
     }
   },
-  "minimum-stability": "dev"
+  "autoload-dev": {
+    "psr-4": {
+        "EloquentFilter\\TestClass\\": "tests/classes"
+    }
+  },
+  "config": {
+        "preferred-install": "dist"
+    },
+  "minimum-stability": "dev",
+  "prefer-stable": true
 }

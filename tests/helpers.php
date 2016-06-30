@@ -10,5 +10,3 @@ if(! function_exists('config')) {
         return $default;
     }
 }
-
-define('FILTER_CLASS', EloquentFilter\TestFilter::class);
