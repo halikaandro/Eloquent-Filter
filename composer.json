@@ -37,5 +37,9 @@
         "EloquentFilter\\TestClass\\": "tests/classes"
     }
   },
-  "minimum-stability": "dev"
+  "config": {
+        "preferred-install": "dist"
+    },
+  "minimum-stability": "dev",
+  "prefer-stable": true
 }
