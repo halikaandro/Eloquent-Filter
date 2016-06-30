@@ -29,7 +29,8 @@
   },
   "autoload": {
     "psr-4": {
-      "EloquentFilter\\": "src/"
+      "EloquentFilter\\": "src/",
+      "EloquentFilter\\TestClass\\": "tests/classes/"
     }
   },
   "autoload-dev": {
