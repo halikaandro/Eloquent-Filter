@@ -107,7 +107,7 @@ trait Filterable
     }
 
     /**
-     * WHERE $column LIKE %$value% query
+     * WHERE $column LIKE %$value% query.
      *
      * @param $query
      * @param $column
@@ -121,7 +121,7 @@ trait Filterable
     }
 
     /**
-     * WHERE $column LIKE $value% query
+     * WHERE $column LIKE $value% query.
      *
      * @param $query
      * @param $column
@@ -135,7 +135,7 @@ trait Filterable
     }
 
     /**
-     * WHERE $column LIKE %$value query
+     * WHERE $column LIKE %$value query.
      *
      * @param $query
      * @param $column
