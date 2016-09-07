@@ -476,13 +476,13 @@ class UserController extends Controller
 #### Additional Filter Methods
 The `Filterable` trait also comes with the below query builder helper methods:
 
-|EloquentFilter Method | Description |QueryBuilder Equivalent|
-|---|---|---|
-|`$this->whereLike($column, $string)`| Searches for the given string in a column |`$query->where($column, 'LIKE', '%'.$string.'%')`|
-|`$this->whereBeginsWith($column, $string)`| Searches for rows where the given column begins with the given string |`$query->where($column, 'LIKE', $string.'%')`|
-|`$this->whereEndsWith($column, $string)` | Searches for rows where the given column ends with the given string |`$query->where($column, 'LIKE', '%'.$string)`|
+|EloquentFilter Method|QueryBuilder Equivalent|
+|---|---|
+|`$this->whereLike($column, $string)`|`$query->where($column, 'LIKE', '%'.$string.'%')`|
+|`$this->whereBeginsWith($column, $string)`|`$query->where($column, 'LIKE', $string.'%')`|
+|`$this->whereEndsWith($column, $string)`|`$query->where($column, 'LIKE', '%'.$string)`|
 
-Since these methods are part of the `Filterable` trait they are accessible from any model that implements the trait without the need to call the filter.
+Since these methods are part of the `Filterable` trait they are accessible from any model that implements the trait without the need to call in the Model's EloquentFilter.
 
 # Contributing
 Any contributions welcome!
