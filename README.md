@@ -107,7 +107,7 @@ Create a public method `modelFilter()` that returns `$this->provideFilter(Your\M
 ```php
 <?php namespace App;
 
-use EloqentFilter\Filterable;
+use EloquentFilter\Filterable;
 use Illuminate\Database\Eloquent\Model;
 
 class User extends Model
@@ -241,7 +241,7 @@ Implement the `EloquentFilter\Filterable` trait on any Eloquent model:
 ```php
 <?php namespace App;
 
-use EloqentFilter\Filterable;
+use EloquentFilter\Filterable;
 use Illuminate\Database\Eloquent\Model;
 
 class User extends Model
