@@ -162,6 +162,26 @@ class ModelFilter
         $this->localRelatedFilters[$relation][] = $closure;
     }
 
+    public function whereRelated($relation, $column, $operator = null, $value = null, $boolean = 'and')
+    {
+        // Just in case we pass a closure this is an alias for the related() method
+        if ($column instanceof \Closure) {
+            $closure = $column;
+        } else {
+
+            if ($value === null) {
+                $value = $operator;
+                $operator = '=';
+            }
+
+            $closure = function ($query) use ($column, $operator, $value, $boolean) {
+                return $query->where($column, $operator, $value, $boolean);
+            };
+        }
+
+        $this->related($relation, $closure);
+    }
+
     /**
      * @param $key
      * @return string
@@ -238,6 +258,13 @@ class ModelFilter
         return array_key_exists($relation, $this->allRelations) ? $this->allRelations[$relation] : [];
     }
 
+    public function callRelatedLocalSetup($related, $query)
+    {
+        if (method_exists($this, $method = camel_case($related).'Setup')) {
+            $this->{$method}($query);
+        }
+    }
+
     /**
      * Run the filter on models that already have their tables joined.
      *
@@ -245,27 +272,23 @@ class ModelFilter
      */
     public function filterJoinedRelation($related)
     {
-        $relatedFilterInput = [];
+        // Apply any relation based scope to avoid method duplication
+        $this->callRelatedLocalSetup($related, $this->query);
 
-        foreach ($this->getRelationConstraints($related) as $key => $val) {
+        foreach ($this->getLocalRelation($related) as $closure) {
             // If a relation is defined locally in a method AND is joined
             // Then we call those defined relation closures on this query
-            if ($val instanceof \Closure) {
-                $val($this->query);
-            } else {
-                $relatedFilterInput[$key] = $val;
-            }
+            $closure($this->query);
         }
 
         // Check if we have input we need to pass through a related Model's filter
         // Then filter by that related model's filter
-        if (count($relatedFilterInput) > 0) {
+        if (count($relatedFilterInput = $this->getRelatedFilterInput($related)) > 0) {
             $filterClass = $this->getRelatedFilter($related);
 
             // Disable querying joined relations on filters of joined tables.
             (new $filterClass($this->query, $this->getRelatedFilterInput($related), false))->handle();
         }
-
     }
 
     /**
@@ -343,19 +366,15 @@ class ModelFilter
     public function filterUnjoinedRelation($related)
     {
         $this->query->whereHas($related, function ($q) use ($related) {
-            $filterableRelated = [];
+            $this->callRelatedLocalSetup($related, $q);
+
             // If we defined it locally then we're running the closure on the related model here right.
-            foreach ($this->getRelationConstraints($related) as $key => $val) {
+            foreach ($this->getLocalRelation($related) as $closure) {
                 // Run in context of the related model locally
-                if ($val instanceof \Closure) {
-                    $val($q);
-                } else {
-                    // Build the array to send to the related filter
-                    $filterableRelated[$key] = $val;
-                }
+                $closure($q);
             }
 
-            if (count($filterableRelated) > 0) {
+            if (count($filterableRelated = $this->getLocalRelation($related)) > 0) {
                 $q->filter($filterableRelated);
             }
 
