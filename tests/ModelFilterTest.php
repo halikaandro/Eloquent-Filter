@@ -118,4 +118,36 @@ class ModelFilterTest extends TestCase
         $this->filter->dropIdSuffix(false);
         $this->assertEquals('userNameId', $this->filter->getFilterMethod($key));
     }
+
+    public function testRelationMethod()
+    {
+        $this->assertEquals($this->filter->getLocalRelation('testRelation'), []);
+
+        $closure = function($query) {
+            return $query->where('id', 1);
+        };
+
+        // Define Closure
+        $this->filter->related('testRelation', $closure);
+
+        // Return closure
+        $relatedClosures = $this->filter->getLocalRelation('testRelation');
+
+        $this->assertEquals($relatedClosures[0], $closure);
+    }
+
+    /**
+     * @depends testRelationMethod
+     */
+    public function testRelatedMethodBooleans()
+    {
+        $related = 'fakeRelation';
+        $this->assertFalse($this->filter->relationIsLocal($related));
+
+        $this->filter->related($related, function($query) {
+            return $query->whereRaw('1 = 1');
+        });
+
+        $this->assertTrue($this->filter->relationIsLocal($related));
+    }
 }
