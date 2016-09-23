@@ -7,7 +7,7 @@
 [![StyleCI](https://styleci.io/repos/53163405/shield)](https://styleci.io/repos/53163405/)
 [![Build Status](https://travis-ci.org/Tucker-Eric/EloquentFilter.svg?branch=master)](https://travis-ci.org/Tucker-Eric/EloquentFilter)
 
-An Eloquent way to filter Eloquent Models
+An Eloquent way to filter Eloquent Models and their relationships
 
 ## Introduction
 Lets say we want to return a list of users filtered by multiple parameters. When we navigate to:
@@ -107,7 +107,7 @@ Create a public method `modelFilter()` that returns `$this->provideFilter(Your\M
 ```php
 <?php namespace App;
 
-use EloqentFilter\Filterable;
+use EloquentFilter\Filterable;
 use Illuminate\Database\Eloquent\Model;
 
 class User extends Model
@@ -241,7 +241,7 @@ Implement the `EloquentFilter\Filterable` trait on any Eloquent model:
 ```php
 <?php namespace App;
 
-use EloqentFilter\Filterable;
+use EloquentFilter\Filterable;
 use Illuminate\Database\Eloquent\Model;
 
 class User extends Model
@@ -557,13 +557,13 @@ class UserController extends Controller
 #### Additional Filter Methods
 The `Filterable` trait also comes with the below query builder helper methods:
 
-|EloquentFilter Method | Description |QueryBuilder Equivalent|
-|---|---|---|
-|`$this->whereLike($column, $string)`| Searches for the given string in a column |`$query->where($column, 'LIKE', '%'.$string.'%')`|
-|`$this->whereBeginsWith($column, $string)`| Searches for rows where the given column begins with the given string |`$query->where($column, 'LIKE', $string.'%')`|
-|`$this->whereEndsWith($column, $string)` | Searches for rows where the given column ends with the given string |`$query->where($column, 'LIKE', '%'.$string)`|
+|EloquentFilter Method|QueryBuilder Equivalent|
+|---|---|
+|`$this->whereLike($column, $string)`|`$query->where($column, 'LIKE', '%'.$string.'%')`|
+|`$this->whereBeginsWith($column, $string)`|`$query->where($column, 'LIKE', $string.'%')`|
+|`$this->whereEndsWith($column, $string)`|`$query->where($column, 'LIKE', '%'.$string)`|
 
-Since these methods are part of the `Filterable` trait they are accessible from any model that implements the trait without the need to call the filter.
+Since these methods are part of the `Filterable` trait they are accessible from any model that implements the trait without the need to call in the Model's EloquentFilter.
 
 # Contributing
 Any contributions welcome!
