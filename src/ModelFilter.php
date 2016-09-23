@@ -157,7 +157,7 @@ class ModelFilter
      * @param $relation
      * @param \Closure $closure
      */
-    public function related($relation, \Closure $closure)
+    public function addRelated($relation, \Closure $closure)
     {
         $this->localRelatedFilters[$relation][] = $closure;
     }
@@ -171,24 +171,21 @@ class ModelFilter
      * @param null $value
      * @param string $boolean
      */
-    public function whereRelated($relation, $column, $operator = null, $value = null, $boolean = 'and')
+    public function related($relation, $column, $operator = null, $value = null, $boolean = 'and')
     {
-        // Just in case we pass a closure this is an alias for the related() method
         if ($column instanceof \Closure) {
-            $closure = $column;
+            $this->addRelated($relation, $column);
         } else {
-
+            // If there is no value it is a where = ? query and we set the appropriate params
             if ($value === null) {
                 $value = $operator;
                 $operator = '=';
             }
 
-            $closure = function ($query) use ($column, $operator, $value, $boolean) {
+            $this->addRelated($relation, function ($query) use ($column, $operator, $value, $boolean) {
                 return $query->where($column, $operator, $value, $boolean);
-            };
+            });
         }
-
-        $this->related($relation, $closure);
     }
 
     /**
