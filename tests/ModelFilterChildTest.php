@@ -44,7 +44,10 @@ class ModelFilterChildTest extends TestCase
         // Empty provide filter App\ModelFilters is the default namespace when empty
         $this->assertEquals($this->model->provideFilter(), App\ModelFilters\UserFilter::class);
         // Filter Value
-        $this->assertEquals($this->model->provideFilter(App\ModelFilters\DynamicFilter\TestModelFilter::class), App\ModelFilters\DynamicFilter\TestModelFilter::class);
+        $this->assertEquals(
+            $this->model->provideFilter(App\ModelFilters\DynamicFilter\TestModelFilter::class),
+            App\ModelFilters\DynamicFilter\TestModelFilter::class
+        );
     }
 
     public function testGetModelFilterClass()

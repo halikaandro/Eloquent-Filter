@@ -265,15 +265,11 @@ class UserController extends Controller
 ```
 
 #### Filtering By Relationships
-In order to filter by a relationship (whether the relation is joined in the query or not) add the relation in the `$relations` array with the name of the relation as referred to on the model as the key and the column names that will be received as input to filter.
+>There are two ways to filter by related models.  Using the `$relations` array to define the input to be injected into the related Model's filter.  If the related model doesn't have a model filter of it's own or you just want to define how to filter that relationship locally instead of adding the logic to that Model's filter then use the `related()` method to filter by a related model that doesn't have a ModelFilter.  You can even combine the 2 and define which input fields in the `$relations` array you want to use that Model's filter for as well as use the `related()` method to define local methods on that same relation.  Both methods nest the filter constraints into the same `whereHas()` query on that relation.
 
-The related model **MUST** have a ModelFilter associated with it.  We instantiate the related model's filter and use the column values from the `$relations` array to call the associated methods.
+For both examples we will use the following models:
 
-This is helpful when querying multiple columns on a relation's table.  For a single column using a `$this->whereHas()` method in the model filter works just fine
-
-##### Example:
-
-If I have a `User` that `hasMany` `App\Client::class` my model would look like:
+A `App\User` that `hasMany` `App\Client::class`:
 
 ```php
 class User extends Model
@@ -287,7 +283,7 @@ class User extends Model
 }
 ```
 
-Let's also say each `App\Client` has belongs to `App\Industry::class`:
+And each `App\Client` belongs to `App\Industry::class`:
 
 ```php
 class Client extends Model
@@ -298,18 +294,86 @@ class Client extends Model
     {
     	return $this->belongsTo(Industry::class);
     }
+    
+    public function scopeHasRevenue($query)
+    {
+    	return $query->where('total_revenue', '>', 0);
+    }
 }
 ```
 
-We want to query our User's and filter them based on the industry of their client:
+We want to query our users and filter them by the industry and volume potential of their clients that have done revenue in the past.
 
 Input used to filter:
 
 ```php
 $input = [
-	'industry' => '5'
+	'industry' 		   => '5',
+    'potential_volume' => '10000'
 ];
 ```
+
+##### Setup
+
+Both methods will invoke a setup query on the relationship that will be called EVERY time this relationship is queried.  The setup methods signature is `{$related}Setup()` and is injected with an instance of that relations query builder.  For this example let's say when querying users by their clients I only ever want to show agents that have clients with revenue. Without choosing wich method to put it in (because sometimes we may not have all the input and miss the scope all together if we choose the wrong one) and to avoid query duplication by placing that constraint on ALL methods for that relation we call the related setup method in the `UserFilter` like:
+> You can learn more about scopes [here](https://laravel.com/docs/master/eloquent#local-scopes)
+
+```php
+class UserFilter extends ModelFilter
+{
+	public function clientsSetup($query)
+    {
+    	return $query->hasRevenue();
+    }
+}
+```
+This prepend all queries with the `hasRevenue()` whenever the `UserFilter` runs any constriants on the `clients()` relationship.  If there are no queries to the `clients()` relationship then this method will not be invoked.
+
+#### Ways To Filter Related Models 
+
+We'll go over the `related()` method first since it is a little easier and requires less setup.
+
+##### To filter a related model using the `related()` method:
+The `related()` method is a little easier to setup and is great if you aren't going to be using the related Model's filter to ever filter that Model explicitly.  The `related()` method takes the same parameters as the `Eloquent\Builder`'s `where()` method except for the first parameter being the relationship name.
+
+##### Example:
+
+
+`UserFilter` with an `industry()` method that uses the `ModelFilter`'s `related()` method
+
+```php
+class UserFilter extends ModelFilter
+{
+	public function industry($id)
+    {
+    	return $this->related('clients', 'industry_id', '=', $id);
+        
+        // This would also be shorthand for the same query
+        // return $this->related('clients', 'industry_id', $id);
+    }
+    
+    public function potentialVolume($volume)
+    {
+    	return $this->related('clients', 'potential_volume', '>=', $volume);
+    }
+}
+```
+
+Or you can even pass a closure as the second argument which will inject an instance of the related model's query builder like:
+```php
+	$this->related('clients', function($query) use ($id) {
+    	return $query->where('industry_id', $id);
+    });
+```
+
+##### To filter a related model using the `$relations` array:
+Add the relation in the `$relations` array with the name of the relation as referred to on the model as the key and an array of input keys that was passed to the `filter()` method.
+
+The related model **MUST** have a ModelFilter associated with it.  We instantiate the related model's filter and use the input values from the `$relations` array to call the associated methods.
+
+This is helpful when querying multiple columns on a relation's table while avoiding multipe `whereHas()` calls for the same relationship.  For a single column using a `$this->whereHas()` method in the model filter works just fine.  In fact, under ther hood the model filter applies all constraints in the `whereHas()` method.
+
+##### Example:
 
 `UserFilter` with the relation defined so it's able to be queried.
 
@@ -317,7 +381,7 @@ $input = [
 class UserFilter extends ModelFilter
 {
 	public $relations = [
-        'clients' => ['industry'],
+        'clients' => ['industry', 'potential_volume'],
     ];
 }
 ```
@@ -334,18 +398,25 @@ class ClientFilter extends ModelFilter
     {
     	return $this->where('industry_id', $id);
 	}
+    
+    public function potentialVolume($volume)
+    {
+    	return $this->where('potential_volume', '>=', $volume);
+    }
 }
 ```
+You can even use both together and it will produce the same result and only query the related model once.  An example would be:
 
 If the following array is passed to the `filter()` method:
 
 ```php
 [
-	'name' 		 => 'er',
-    'last_name'  => ''
-    'company_id' => 2,
-    'roles'      => [1,4,7],
-    'industry'   => 5
+	'name' 		 		=> 'er',
+    'last_name'  		=> ''
+    'company_id' 		=> 2,
+    'roles'      		=> [1,4,7],
+    'industry'   		=> 5,
+    'potential_volume' => '10000'
 ]
 ```
 
@@ -361,6 +432,11 @@ class UserFilter extends ModelFilter
 	public $relations = [
         'clients' => ['industry'],
     ];
+    
+    public function clientsSetup($query)
+    {
+    	return $query->hasRevenue();
+    }
 
 	public function name($name)
     {
@@ -368,6 +444,11 @@ class UserFilter extends ModelFilter
         {
         	return $q->where('first_name', 'LIKE', $name . '%')->orWhere('last_name', 'LIKE', '%' . $name.'%');
         });
+    }
+    
+    public function potentialVolume($volume)
+    {
+    	return $this->related('clients', 'potential_volume', '>=', $volume);
     }
 
     public function lastName($lastName)

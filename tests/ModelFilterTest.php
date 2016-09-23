@@ -118,4 +118,78 @@ class ModelFilterTest extends TestCase
         $this->filter->dropIdSuffix(false);
         $this->assertEquals('userNameId', $this->filter->getFilterMethod($key));
     }
+
+    public function testRelatedMethodBooleans()
+    {
+        $related = 'fakeRelation';
+        $this->assertFalse($this->filter->relationIsLocal($related));
+
+        $this->filter->related($related, function($query) {
+            return $query->whereRaw('1 = 1');
+        });
+
+        $this->assertTrue($this->filter->relationIsLocal($related));
+    }
+
+    /**
+     * @depends testRelatedMethodBooleans
+     */
+    public function testRelatedMethod()
+    {
+        $this->assertEquals($this->filter->getLocalRelation('testRelation'), []);
+
+        $closure = function($query) {
+            return $query->where('id', 1);
+        };
+
+        // Define Closure
+        $this->filter->related('testRelation', $closure);
+
+        // Return closure
+        $relatedClosures = $this->filter->getLocalRelation('testRelation');
+
+        $this->assertTrue(is_callable($relatedClosures[0]));
+
+        $query = m::mock(Illuminate\Database\Query\Builder::class);
+
+        $query->shouldReceive('where')->with('id', 1)->once();
+
+        $relatedClosures[0]->__invoke($query);
+    }
+
+    /**
+     * @depends testRelatedMethod
+     */
+    public function testWhereRelatedMethodWithoutValue()
+    {
+        $related = 'fakeRelation';
+
+        $this->filter->related($related, 'id', 1);
+
+        $relatedClosures = $this->filter->getLocalRelation('fakeRelation');
+
+        $query = m::mock(Illuminate\Database\Query\Builder::class);
+
+        $query->shouldReceive('where')->with('id', '=', 1, 'and')->once();
+
+        $relatedClosures[0]->__invoke($query);
+    }
+
+    /**
+     * @depends testRelatedMethod
+     */
+    public function testWhereRelatedMethodWithValue()
+    {
+        $related = 'fakeRelation';
+
+        $this->filter->related($related, 'id', '>=' ,1, 'or');
+
+        $relatedClosures = $this->filter->getLocalRelation('fakeRelation');
+
+        $query = m::mock(Illuminate\Database\Query\Builder::class);
+
+        $query->shouldReceive('where')->with('id', '>=', 1, 'or')->once();
+
+        $relatedClosures[0]->__invoke($query);
+    }
 }
