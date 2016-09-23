@@ -162,6 +162,15 @@ class ModelFilter
         $this->localRelatedFilters[$relation][] = $closure;
     }
 
+    /**
+     * Add a where constraint to a relationship.
+     *
+     * @param $relation
+     * @param $column
+     * @param null $operator
+     * @param null $value
+     * @param string $boolean
+     */
     public function whereRelated($relation, $column, $operator = null, $value = null, $boolean = 'and')
     {
         // Just in case we pass a closure this is an alias for the related() method
