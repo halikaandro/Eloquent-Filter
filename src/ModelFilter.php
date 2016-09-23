@@ -296,7 +296,7 @@ class ModelFilter
             $filterClass = $this->getRelatedFilter($related);
 
             // Disable querying joined relations on filters of joined tables.
-            (new $filterClass($this->query, $this->getRelatedFilterInput($related), false))->handle();
+            (new $filterClass($this->query, $relatedFilterInput, false))->handle();
         }
     }
 
@@ -383,7 +383,7 @@ class ModelFilter
                 $closure($q);
             }
 
-            if (count($filterableRelated = $this->getLocalRelation($related)) > 0) {
+            if (count($filterableRelated = $this->getRelatedFilterInput($related)) > 0) {
                 $q->filter($filterableRelated);
             }
 
