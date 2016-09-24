@@ -162,9 +162,7 @@ class ModelFilterTest extends TestCase
      */
     public function testWhereRelatedMethodWithoutValue()
     {
-        $related = 'fakeRelation';
-
-        $this->filter->related($related, 'id', 1);
+        $this->filter->related('fakeRelation', 'id', 1);
 
         $relatedClosures = $this->filter->getLocalRelation('fakeRelation');
 
@@ -180,9 +178,7 @@ class ModelFilterTest extends TestCase
      */
     public function testWhereRelatedMethodWithValue()
     {
-        $related = 'fakeRelation';
-
-        $this->filter->related($related, 'id', '>=', 1, 'or');
+        $this->filter->related('fakeRelation', 'id', '>=', 1, 'or');
 
         $relatedClosures = $this->filter->getLocalRelation('fakeRelation');
 
