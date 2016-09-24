@@ -14,17 +14,17 @@ class ModelFilterTest extends TestCase
 
     protected $config;
 
-    public function tearDown()
-    {
-        m::close();
-    }
-
     public function setUp()
     {
-        $this->builder = m::mock('builder');
+        $this->builder = m::mock(Illuminate\Database\Eloquent\Builder::class);
         $this->filter = new ModelFilter($this->builder);
         $this->config = require __DIR__.'/config.php';
         $this->testInput = $this->config['test_input'];
+    }
+
+    public function tearDown()
+    {
+        m::close();
     }
 
     public function testRemoveEmptyInput()
@@ -150,7 +150,7 @@ class ModelFilterTest extends TestCase
 
         $this->assertTrue(is_callable($relatedClosures[0]));
 
-        $query = m::mock(Illuminate\Database\Query\Builder::class);
+        $query = m::mock(Illuminate\Database\Eloquent\Builder::class);
 
         $query->shouldReceive('where')->with('id', 1)->once();
 
