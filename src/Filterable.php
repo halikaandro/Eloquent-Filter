@@ -18,7 +18,7 @@ trait Filterable
      *
      * @param $query
      * @param array $input
-     * @param null|string $filter
+     * @param null|string|ModelFilter $filter
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopeFilter($query, array $input = [], $filter = null)
@@ -104,5 +104,47 @@ trait Filterable
     public function getModelFilterClass()
     {
         return method_exists($this, 'modelFilter') ? $this->modelFilter() : $this->provideFilter();
+    }
+
+    /**
+     * WHERE $column LIKE %$value% query.
+     *
+     * @param $query
+     * @param $column
+     * @param $value
+     * @param string $boolean
+     * @return mixed
+     */
+    public function scopeWhereLike($query, $column, $value, $boolean = 'and')
+    {
+        return $query->where($column, 'LIKE', "%$value%", $boolean);
+    }
+
+    /**
+     * WHERE $column LIKE $value% query.
+     *
+     * @param $query
+     * @param $column
+     * @param $value
+     * @param string $boolean
+     * @return mixed
+     */
+    public function scopeWhereBeginsWith($query, $column, $value, $boolean = 'and')
+    {
+        return $query->where($column, 'LIKE', "$value%", $boolean);
+    }
+
+    /**
+     * WHERE $column LIKE %$value query.
+     *
+     * @param $query
+     * @param $column
+     * @param $value
+     * @param string $boolean
+     * @return mixed
+     */
+    public function scopeWhereEndsWith($query, $column, $value, $boolean = 'and')
+    {
+        return $query->where($column, 'LIKE', "%$value", $boolean);
     }
 }

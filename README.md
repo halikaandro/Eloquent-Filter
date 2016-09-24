@@ -2,11 +2,12 @@
 
 [![Latest Stable Version](https://poser.pugx.org/tucker-eric/eloquentfilter/v/stable)](https://packagist.org/packages/tucker-eric/eloquentfilter)
 [![Total Downloads](https://poser.pugx.org/tucker-eric/eloquentfilter/downloads)](https://packagist.org/packages/tucker-eric/eloquentfilter)
+[![Daily Downloads](https://poser.pugx.org/tucker-eric/eloquentfilter/d/daily)](https://packagist.org/packages/tucker-eric/eloquentfilter)
 [![License](https://poser.pugx.org/tucker-eric/eloquentfilter/license)](https://packagist.org/packages/tucker-eric/eloquentfilter)
 [![StyleCI](https://styleci.io/repos/53163405/shield)](https://styleci.io/repos/53163405/)
 [![Build Status](https://travis-ci.org/Tucker-Eric/EloquentFilter.svg?branch=master)](https://travis-ci.org/Tucker-Eric/EloquentFilter)
 
-An Eloquent way to filter Eloquent Models
+An Eloquent way to filter Eloquent Models and their relationships
 
 ## Introduction
 Lets say we want to return a list of users filtered by multiple parameters. When we navigate to:
@@ -14,6 +15,7 @@ Lets say we want to return a list of users filtered by multiple parameters. When
 `/users?name=er&last_name=&company_id=2&roles[]=1&roles[]=4&roles[]=7&industry=5`
 
 `$request->all()` will return:
+
 ```php
 [
 	'name' 		 => 'er',
@@ -23,7 +25,9 @@ Lets say we want to return a list of users filtered by multiple parameters. When
     'industry'   => '5'
 ]
 ```
+
 To filter by all those parameters we would need to do something like:
+
 ```php
 <?php namespace App\Http\Controllers;
 
@@ -67,6 +71,7 @@ class UserController extends Controller
 
 }
 ```
+
 To filter that same input With Eloquent Filters:
 
 ```php
@@ -102,7 +107,7 @@ Create a public method `modelFilter()` that returns `$this->provideFilter(Your\M
 ```php
 <?php namespace App;
 
-use EloqentFilter\Filterable;
+use EloquentFilter\Filterable;
 use Illuminate\Database\Eloquent\Model;
 
 class User extends Model
@@ -122,6 +127,7 @@ class User extends Model
 > Registering the service provider will give you access to the `php artisan model:filter {model}` command as well as allow you to publish the configuration file.  Registering the service provider is not required as long as you have a `modelFilter()` method on all models using the `EloquentFilter\Filterable` trait OR all your model filters reside in the `App\ModelFilters` namespace and follow the naming convention of `{Model}Filter`
 
 After installing the Eloquent Filter library, register the `EloquentFilter\ServiceProvider::class` in your `config/app.php` configuration file:
+
 ```php
 'providers' => [
     // Other service providers...
@@ -129,11 +135,15 @@ After installing the Eloquent Filter library, register the `EloquentFilter\Servi
     EloquentFilter\ServiceProvider::class,
 ],
 ```
+
 Copy the package config to your local config with the publish command:
+
 ```bash
 php artisan vendor:publish --provider="EloquentFilter\ServiceProvider"
 ```
+
 In the `app/eloquentfilter.php` config file.  Set the namespace your model filters will reside in:
+
 ```php
 'namespace' => "App\\ModelFilters\\",
 ```
@@ -142,15 +152,19 @@ In the `app/eloquentfilter.php` config file.  Set the namespace your model filte
 > Only available if you have registered `EloquentFilter\ServiceProvider::class` in the providers array in your `config/app.php'
 
 You can create a model filter with the following artisan command:
+
 ```bash
 php artisan model:filter User
 ```
+
 Where `User` is the Eloquent Model you are creating the filter for.  This will create `app/ModelFilters/UserFilter.php`
 
 The command also supports psr-4 namespacing for creating filters.  You just need to make sure you escape the backslashes in the class name.  For example:
+
 ```bash
 php artisan model:filter AdminFilters\\User
 ```
+
 This would create `app/ModelFilters/AdminFilters/UserFilter.php`
 
 ## Usage
@@ -167,6 +181,7 @@ Define the filter logic based on the camel cased input key passed to the `filter
 - All Eloquent Builder methods are accessible in `this` context in the model filter class.
 
 To define methods for the following input:
+
 ```php
 [
 	'company_id'   => 5,
@@ -174,7 +189,9 @@ To define methods for the following input:
 	'mobile_phone' => '888555'
 ]
 ```
+
 You would use the following methods:
+
 ```php
 class UserFilter extends ModelFilter
 {
@@ -212,6 +229,7 @@ class UserFilter extends ModelFilter
     }
 }
 ```
+
 > Note:  In the above example if you do not want `_id` dropped from the end of the input you can set `protected $drop_id = false` on your filter class.  Doing this would allow you to have a `company()` filter method as well as a `companyId()` filter method.
 
 > Note: In the example above all methods inside `setup()` will be called every time `filter()` is called on the model
@@ -219,10 +237,11 @@ class UserFilter extends ModelFilter
 ### Applying The Filter To A Model
 
 Implement the `EloquentFilter\Filterable` trait on any Eloquent model:
+
 ```php
 <?php namespace App;
 
-use EloqentFilter\Filterable;
+use EloquentFilter\Filterable;
 use Illuminate\Database\Eloquent\Model;
 
 class User extends Model
@@ -232,7 +251,9 @@ class User extends Model
     //User Class
 }
 ```
+
 This gives you access to the `filter()` method that accepts an array of input:
+
 ```php
 class UserController extends Controller
 {
@@ -242,16 +263,14 @@ class UserController extends Controller
     }
 }
 ```
+
 #### Filtering By Relationships
-In order to filter by a relationship (whether the relation is joined in the query or not) add the relation in the `$relations` array with the name of the relation as referred to on the model as the key and the column names that will be received as input to filter.
+>There are two ways to filter by related models.  Using the `$relations` array to define the input to be injected into the related Model's filter.  If the related model doesn't have a model filter of it's own or you just want to define how to filter that relationship locally instead of adding the logic to that Model's filter then use the `related()` method to filter by a related model that doesn't have a ModelFilter.  You can even combine the 2 and define which input fields in the `$relations` array you want to use that Model's filter for as well as use the `related()` method to define local methods on that same relation.  Both methods nest the filter constraints into the same `whereHas()` query on that relation.
 
-The related model **MUST** have a ModelFilter associated with it.  We instantiate the related model's filter and use the column values from the `$relations` array to call the associated methods.
+For both examples we will use the following models:
 
-This is helpful when querying multiple columns on a relation's table.  For a single column using a `$this->whereHas()` method in the model filter works just fine
+A `App\User` that `hasMany` `App\Client::class`:
 
-##### Example:
-
-If I have a `User` that `hasMany` `App\Client::class` my model would look like:
 ```php
 class User extends Model
 {
@@ -263,7 +282,9 @@ class User extends Model
     }
 }
 ```
-Let's also say each `App\Client` has belongs to `App\Industry::class`:
+
+And each `App\Client` belongs to `App\Industry::class`:
+
 ```php
 class Client extends Model
 {
@@ -273,27 +294,101 @@ class Client extends Model
     {
     	return $this->belongsTo(Industry::class);
     }
+    
+    public function scopeHasRevenue($query)
+    {
+    	return $query->where('total_revenue', '>', 0);
+    }
 }
 ```
-We want to query our User's and filter them based on the industry of their client:
+
+We want to query our users and filter them by the industry and volume potential of their clients that have done revenue in the past.
 
 Input used to filter:
+
 ```php
 $input = [
-	'industry' => '5'
+	'industry' 		   => '5',
+    'potential_volume' => '10000'
 ];
 ```
+
+##### Setup
+
+Both methods will invoke a setup query on the relationship that will be called EVERY time this relationship is queried.  The setup methods signature is `{$related}Setup()` and is injected with an instance of that relations query builder.  For this example let's say when querying users by their clients I only ever want to show agents that have clients with revenue. Without choosing wich method to put it in (because sometimes we may not have all the input and miss the scope all together if we choose the wrong one) and to avoid query duplication by placing that constraint on ALL methods for that relation we call the related setup method in the `UserFilter` like:
+> You can learn more about scopes [here](https://laravel.com/docs/master/eloquent#local-scopes)
+
+```php
+class UserFilter extends ModelFilter
+{
+	public function clientsSetup($query)
+    {
+    	return $query->hasRevenue();
+    }
+}
+```
+This prepend all queries with the `hasRevenue()` whenever the `UserFilter` runs any constriants on the `clients()` relationship.  If there are no queries to the `clients()` relationship then this method will not be invoked.
+
+#### Ways To Filter Related Models 
+
+We'll go over the `related()` method first since it is a little easier and requires less setup.
+
+##### To filter a related model using the `related()` method:
+The `related()` method is a little easier to setup and is great if you aren't going to be using the related Model's filter to ever filter that Model explicitly.  The `related()` method takes the same parameters as the `Eloquent\Builder`'s `where()` method except for the first parameter being the relationship name.
+
+##### Example:
+
+
+`UserFilter` with an `industry()` method that uses the `ModelFilter`'s `related()` method
+
+```php
+class UserFilter extends ModelFilter
+{
+	public function industry($id)
+    {
+    	return $this->related('clients', 'industry_id', '=', $id);
+        
+        // This would also be shorthand for the same query
+        // return $this->related('clients', 'industry_id', $id);
+    }
+    
+    public function potentialVolume($volume)
+    {
+    	return $this->related('clients', 'potential_volume', '>=', $volume);
+    }
+}
+```
+
+Or you can even pass a closure as the second argument which will inject an instance of the related model's query builder like:
+```php
+	$this->related('clients', function($query) use ($id) {
+    	return $query->where('industry_id', $id);
+    });
+```
+
+##### To filter a related model using the `$relations` array:
+Add the relation in the `$relations` array with the name of the relation as referred to on the model as the key and an array of input keys that was passed to the `filter()` method.
+
+The related model **MUST** have a ModelFilter associated with it.  We instantiate the related model's filter and use the input values from the `$relations` array to call the associated methods.
+
+This is helpful when querying multiple columns on a relation's table while avoiding multipe `whereHas()` calls for the same relationship.  For a single column using a `$this->whereHas()` method in the model filter works just fine.  In fact, under ther hood the model filter applies all constraints in the `whereHas()` method.
+
+##### Example:
+
 `UserFilter` with the relation defined so it's able to be queried.
+
 ```php
 class UserFilter extends ModelFilter
 {
 	public $relations = [
-        'clients' => ['industry'],
+        'clients' => ['industry', 'potential_volume'],
     ];
 }
 ```
+
 `ClientFilter` with the `industry` method that's used to filter:
 > **Note:** The `$relations` array should identify the relation and the input key to filter by that relation. Just as the `ModelFilter` works, this will access the camelCased method on that relation's filter. If the above example was using the key `industry_type` for the input the relations array would be `$relations = ['clients' => ['industry_type']]` and the `ClientFilter` would have the method `industryType()`.
+
 ```php
 class ClientFilter extends ModelFilter
 {
@@ -303,20 +398,30 @@ class ClientFilter extends ModelFilter
     {
     	return $this->where('industry_id', $id);
 	}
+    
+    public function potentialVolume($volume)
+    {
+    	return $this->where('potential_volume', '>=', $volume);
+    }
 }
 ```
+You can even use both together and it will produce the same result and only query the related model once.  An example would be:
 
 If the following array is passed to the `filter()` method:
+
 ```php
 [
-	'name' 		 => 'er',
-    'last_name'  => ''
-    'company_id' => 2,
-    'roles'      => [1,4,7],
-    'industry'   => 5
+	'name' 		 		=> 'er',
+    'last_name'  		=> ''
+    'company_id' 		=> 2,
+    'roles'      		=> [1,4,7],
+    'industry'   		=> 5,
+    'potential_volume' => '10000'
 ]
 ```
+
 In `app/ModelFilters/UserFilter.php`:
+
 ```php
 <?php namespace App\ModelFilters;
 
@@ -327,6 +432,11 @@ class UserFilter extends ModelFilter
 	public $relations = [
         'clients' => ['industry'],
     ];
+    
+    public function clientsSetup($query)
+    {
+    	return $query->hasRevenue();
+    }
 
 	public function name($name)
     {
@@ -334,6 +444,11 @@ class UserFilter extends ModelFilter
         {
         	return $q->where('first_name', 'LIKE', $name . '%')->orWhere('last_name', 'LIKE', '%' . $name.'%');
         });
+    }
+    
+    public function potentialVolume($volume)
+    {
+    	return $this->related('clients', 'potential_volume', '>=', $volume);
     }
 
     public function lastName($lastName)
@@ -355,11 +470,13 @@ class UserFilter extends ModelFilter
     }
 }
 ```
+
 ##### Adding Relation Values To Filter
 Sometimes, based on the value of a parameter you may need to push data to a relation filter.  The `push()` method does just this.
 It accepts one argument as an array of key value pairs or to arguments as a key value pair `push($key, $value)`.
 Related models are filtered AFTER all local values have been executed you can use this method in any filter method.
 This avoids having to query a related table more than once.  For Example:
+
 ```php
 public $relations = [
     'clients' => ['industry', 'status'],
@@ -372,14 +489,19 @@ public function statusType($type)
     }
 }
 ```
+
 The above example will pass `'all'` to the `stats()` method on the `clients` relation of the model.
 > Calling the `push()` method in the `setup()` method will allow you to push values to the input for filter it's called on
+
 #### Pagination
 If you want to paginate your query and keep the url query string without having to use:
+
 ```php
 {!! $pages->appends(Input::except('page'))->render() !!}
 ```
+
 The `paginateFilter()` and `simplePaginateFilter()` methods accept the same input as [Laravel's paginator](https://laravel.com/docs/master/pagination#basic-usage) and returns the respective paginator.
+
 ```php
 class UserController extends Controller
 {
@@ -390,7 +512,9 @@ class UserController extends Controller
         return view('users.index', compact('users'));
     }
 ```
+
 OR:
+
 ```php
     public function simpleIndex(Request $request)
     {
@@ -400,6 +524,7 @@ OR:
     }
 }
 ```
+
 In your view `$users->render()` will return pagination links as it normally would but with the original query string with empty input ignored.
 
 #### Dynamic Filters
@@ -429,7 +554,16 @@ class UserController extends Controller
 }
 
 ```
+#### Additional Filter Methods
+The `Filterable` trait also comes with the below query builder helper methods:
 
+|EloquentFilter Method|QueryBuilder Equivalent|
+|---|---|
+|`$this->whereLike($column, $string)`|`$query->where($column, 'LIKE', '%'.$string.'%')`|
+|`$this->whereBeginsWith($column, $string)`|`$query->where($column, 'LIKE', $string.'%')`|
+|`$this->whereEndsWith($column, $string)`|`$query->where($column, 'LIKE', '%'.$string)`|
+
+Since these methods are part of the `Filterable` trait they are accessible from any model that implements the trait without the need to call in the Model's EloquentFilter.
 
 # Contributing
 Any contributions welcome!

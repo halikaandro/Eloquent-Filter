@@ -6,26 +6,25 @@ use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 
 /**
  * @method  QueryBuilder where(string $column, string $operator = null, mixed $value = null, string $boolean = 'and')
- * @method  QueryBuilder has( string $relation, string $operator = '>=', int $count = 1, string $boolean = 'and', \Closure $callback = null)
- * @method  QueryBuilder doesntHave( string $relation, string $boolean = 'and', \Closure $callback = null)
- * @method  QueryBuilder whereHas( string $relation, \Closure $callback, string $operator = '>=', int $count = 1)
- * @method  QueryBuilder whereDoesntHave( string $relation, \Closure $callback = null)
- * @method  QueryBuilder selectRaw( string $expression, array $bindings = array())
- * @method  QueryBuilder selectSub( \Closure|QueryBuilder|string $query, string $as)
- * @method  QueryBuilder whereRaw( string $sql, mixed $bindings = array(), string $boolean = 'and')
- * @method  QueryBuilder whereBetween( string $column, array $values, string $boolean = 'and', bool $not = false)
- * @method  QueryBuilder whereNotBetween( string $column, array $values, string $boolean = 'and')
- * @method  QueryBuilder whereNested( \Closure $callback, string $boolean = 'and')
- * @method  QueryBuilder whereExists( \Closure $callback, string $boolean = 'and', bool $not = false)
- * @method  QueryBuilder whereIn( string $column, mixed $values, string $boolean = 'and', bool $not = false)
- * @method  QueryBuilder whereNotIn( string $column, mixed $values, string $boolean = 'and')
- * @method  QueryBuilder whereNotNull( string $column, string $boolean = 'and')
- * @method  QueryBuilder whereDate( string $column, string $operator, int $value, string $boolean = 'and')
- * @method  QueryBuilder whereDay( string $column, string $operator, int $value, string $boolean = 'and')
- * @method  QueryBuilder whereMonth( string $column, string $operator, int $value, string $boolean = 'and')
- * @method  QueryBuilder whereYear( string $column, string $operator, int $value, string $boolean = 'and')
- * @method  QueryBuilder orderBy( string $column, string $direction = 'asc')
- * @method  QueryBuilder limit( int $value)
+ * @method  QueryBuilder doesntHave(string $relation, string $boolean = 'and', \Closure $callback = null)
+ * @method  QueryBuilder whereHas(string $relation, \Closure $callback, string $operator = '>=', int $count = 1)
+ * @method  QueryBuilder whereDoesntHave(string $relation, \Closure $callback = null)
+ * @method  QueryBuilder selectRaw(string $expression, array $bindings = [])
+ * @method  QueryBuilder selectSub(\Closure|QueryBuilder|string $query, string $as)
+ * @method  QueryBuilder whereRaw(string $sql, mixed $bindings = [], string $boolean = 'and')
+ * @method  QueryBuilder whereBetween(string $column, array $values, string $boolean = 'and', bool $not = false)
+ * @method  QueryBuilder whereNotBetween(string $column, array $values, string $boolean = 'and')
+ * @method  QueryBuilder whereNested(\Closure $callback, string $boolean = 'and')
+ * @method  QueryBuilder whereExists(\Closure $callback, string $boolean = 'and', bool $not = false)
+ * @method  QueryBuilder whereIn(string $column, mixed $values, string $boolean = 'and', bool $not = false)
+ * @method  QueryBuilder whereNotIn(string $column, mixed $values, string $boolean = 'and')
+ * @method  QueryBuilder whereNotNull(string $column, string $boolean = 'and')
+ * @method  QueryBuilder whereDate(string $column, string $operator, int $value, string $boolean = 'and')
+ * @method  QueryBuilder whereDay(string $column, string $operator, int $value, string $boolean = 'and')
+ * @method  QueryBuilder whereMonth(string $column, string $operator, int $value, string $boolean = 'and')
+ * @method  QueryBuilder whereYear(string $column, string $operator, int $value, string $boolean = 'and')
+ * @method  QueryBuilder orderBy(string $column, string $direction = 'asc')
+ * @method  QueryBuilder limit(int $value)
  * @method  QueryBuilder withTrashed()
  */
 class ModelFilter
@@ -37,6 +36,20 @@ class ModelFilter
      * @var array
      */
     public $relations = [];
+
+    /**
+     * Container to hold all relation queries defined as closures as ['relation' => [\Closure, \Closure]].
+     * (This allows us to not be required to define a filter for the related models).
+     *
+     * @var array
+     */
+    protected $localRelatedFilters = [];
+
+    /**
+     * Container for all relations (local and related ModelFilters).
+     * @var array
+     */
+    protected $allRelations = [];
 
     /**
      * Array of input to filter.
@@ -58,19 +71,19 @@ class ModelFilter
     protected $drop_id = true;
 
     /**
-     * Tables already joined in the query to filter by the joined column instead of using
-     *  ->whereHas to save a little bit of resources.
-     *
-     * @var null
-     */
-    private $_joinedTables = null;
-
-    /**
      * This is to be able to bypass relations if we are filtering a joined table.
      *
      * @var bool
      */
     protected $relationsEnabled;
+
+    /**
+     * Tables already joined in the query to filter by the joined column instead of using
+     *  ->whereHas to save a little bit of resources.
+     *
+     * @var null
+     */
+    private $_joinedTables;
 
     /**
      * ModelFilter constructor.
@@ -102,7 +115,7 @@ class ModelFilter
     /**
      * Remove empty strings from the input array.
      *
-     * @param $input
+     * @param array $input
      * @return array
      */
     public function removeEmptyInput($input)
@@ -139,8 +152,44 @@ class ModelFilter
     }
 
     /**
-     * Get filter method to call on input.
+     * Locally defines a relation filter method that will be called in the context of the related model.
      *
+     * @param $relation
+     * @param \Closure $closure
+     */
+    public function addRelated($relation, \Closure $closure)
+    {
+        $this->localRelatedFilters[$relation][] = $closure;
+    }
+
+    /**
+     * Add a where constraint to a relationship.
+     *
+     * @param $relation
+     * @param $column
+     * @param null $operator
+     * @param null $value
+     * @param string $boolean
+     */
+    public function related($relation, $column, $operator = null, $value = null, $boolean = 'and')
+    {
+        if ($column instanceof \Closure) {
+            $this->addRelated($relation, $column);
+        } else {
+            // If there is no value it is a where = ? query and we set the appropriate params
+            if ($value === null) {
+                $value = $operator;
+                $operator = '=';
+            }
+
+            $this->addRelated($relation, function ($query) use ($column, $operator, $value, $boolean) {
+                return $query->where($column, $operator, $value, $boolean);
+            });
+        }
+    }
+
+    /**
+     * @param $key
      * @return string
      */
     public function getFilterMethod($key)
@@ -153,7 +202,7 @@ class ModelFilter
      */
     public function filterInput()
     {
-        foreach ($this->input() as $key => $val) {
+        foreach ($this->input as $key => $val) {
             // Call all local methods on filter
             $method = $this->getFilterMethod($key);
 
@@ -170,17 +219,16 @@ class ModelFilter
      */
     public function filterRelations()
     {
-        // No need to filer if we dont have any relations
-        if (! $this->relationsEnabled() || count($this->relations) === 0) {
-            return $this;
-        }
-
-        foreach ($this->relations as $related => $fields) {
-            if (count($filterableInput = array_only($this->input, $fields)) > 0) {
-                if ($this->relationIsJoined($related)) {
-                    $this->filterJoinedRelation($related, $filterableInput);
-                } else {
-                    $this->filterUnjoinedRelation($related, $filterableInput);
+        // Verify we can filter by relations and there are relations to filter by
+        if ($this->relationsEnabled()) {
+            foreach ($this->getAllRelations() as $related => $filterable) {
+                // Make sure we have filterable input
+                if (count($filterable) > 0) {
+                    if ($this->relationIsJoined($related)) {
+                        $this->filterJoinedRelation($related);
+                    } else {
+                        $this->filterUnjoinedRelation($related);
+                    }
                 }
             }
         }
@@ -189,17 +237,64 @@ class ModelFilter
     }
 
     /**
+     * Returns all local relations and relations requiring other Model's Filter's.
+     * @return array
+     */
+    public function getAllRelations()
+    {
+        if (count($this->allRelations) === 0) {
+            $allRelations = array_merge(array_keys($this->relations), array_keys($this->localRelatedFilters));
+
+            foreach ($allRelations as $related) {
+                $this->allRelations[$related] = array_merge($this->getLocalRelation($related), $this->getRelatedFilterInput($related));
+            }
+        }
+
+        return $this->allRelations;
+    }
+
+    /**
+     * Get all input to pass through related filters and local closures as an array.
+     *
+     * @param string $relation
+     * @return array
+     */
+    public function getRelationConstraints($relation)
+    {
+        return array_key_exists($relation, $this->allRelations) ? $this->allRelations[$relation] : [];
+    }
+
+    public function callRelatedLocalSetup($related, $query)
+    {
+        if (method_exists($this, $method = camel_case($related).'Setup')) {
+            $this->{$method}($query);
+        }
+    }
+
+    /**
      * Run the filter on models that already have their tables joined.
      *
      * @param $related
-     * @param $filterableInput
      */
-    public function filterJoinedRelation($related, $filterableInput)
+    public function filterJoinedRelation($related)
     {
-        $filterClass = $this->getRelatedFilter($related);
+        // Apply any relation based scope to avoid method duplication
+        $this->callRelatedLocalSetup($related, $this->query);
 
-        // Disable querying a joined tables relations
-        (new $filterClass($this->query, $filterableInput, false))->handle();
+        foreach ($this->getLocalRelation($related) as $closure) {
+            // If a relation is defined locally in a method AND is joined
+            // Then we call those defined relation closures on this query
+            $closure($this->query);
+        }
+
+        // Check if we have input we need to pass through a related Model's filter
+        // Then filter by that related model's filter
+        if (count($relatedFilterInput = $this->getRelatedFilterInput($related)) > 0) {
+            $filterClass = $this->getRelatedFilter($related);
+
+            // Disable querying joined relations on filters of joined tables.
+            (new $filterClass($this->query, $relatedFilterInput, false))->handle();
+        }
     }
 
     /**
@@ -228,7 +323,7 @@ class ModelFilter
      */
     public function relationIsJoined($relation)
     {
-        if (is_null($this->_joinedTables)) {
+        if ($this->_joinedTables === null) {
             $this->_joinedTables = $this->getJoinedTables();
         }
 
@@ -269,16 +364,81 @@ class ModelFilter
     }
 
     /**
-     * Filters by a relationship that isnt joined by using that relation's ModelFilter.
+     * Filters by a relationship that isn't joined by using that relation's ModelFilter.
      *
      * @param $related
      * @param $filterableInput
      */
-    public function filterUnjoinedRelation($related, $filterableInput)
+    public function filterUnjoinedRelation($related)
     {
-        $this->query->whereHas($related, function ($q) use ($filterableInput) {
-            return $q->filter($filterableInput);
+        $this->query->whereHas($related, function ($q) use ($related) {
+            $this->callRelatedLocalSetup($related, $q);
+
+            // If we defined it locally then we're running the closure on the related model here right.
+            foreach ($this->getLocalRelation($related) as $closure) {
+                // Run in context of the related model locally
+                $closure($q);
+            }
+
+            if (count($filterableRelated = $this->getRelatedFilterInput($related)) > 0) {
+                $q->filter($filterableRelated);
+            }
+
+            return $q;
         });
+    }
+
+    /**
+     * Get input to pass to a related Model's Filter.
+     *
+     * @param $related
+     * @return array
+     */
+    public function getRelatedFilterInput($related)
+    {
+        return array_key_exists($related, $this->relations) ? array_only($this->input, $this->relations[$related]) : [];
+    }
+
+    /**
+     * Check to see if there is input or locally defined methods for the given relation.
+     *
+     * @param $relation
+     * @return bool
+     */
+    public function relationIsFilterable($relation)
+    {
+        return $this->relationUsesFilter($relation) || $this->relationIsLocal($relation);
+    }
+
+    /**
+     * Checks if there is input that should be passed to a related Model Filter.
+     *
+     * @param $related
+     * @return bool
+     */
+    public function relationUsesFilter($related)
+    {
+        return count($this->getRelatedFilterInput($related)) > 0;
+    }
+
+    /**
+     * Checks to see if there are locally defined relations to filter.
+     *
+     * @param $related
+     * @return bool
+     */
+    public function relationIsLocal($related)
+    {
+        return count($this->getLocalRelation($related)) > 0;
+    }
+
+    /**
+     * @param string $related
+     * @return array
+     */
+    public function getLocalRelation($related)
+    {
+        return array_key_exists($related, $this->localRelatedFilters) ? $this->localRelatedFilters[$related] : [];
     }
 
     /**
@@ -290,11 +450,11 @@ class ModelFilter
      */
     public function input($key = null, $default = null)
     {
-        if (is_null($key)) {
+        if ($key === null) {
             return $this->input;
         }
 
-        return isset($this->input[$key]) ? $this->input[$key] : $default;
+        return array_key_exists($key, $this->input) ? $this->input[$key] : $default;
     }
 
     /**

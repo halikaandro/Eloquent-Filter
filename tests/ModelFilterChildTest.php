@@ -12,6 +12,11 @@ class ModelFilterChildTest extends TestCase
 {
     protected $model;
 
+    public function setUp()
+    {
+        $this->model = new User;
+    }
+
     public function tearDown()
     {
         m::close();
@@ -36,16 +41,18 @@ class ModelFilterChildTest extends TestCase
 
     public function testProvideFilter()
     {
-        $model = new User;
+
         // Empty provide filter App\ModelFilters is the default namespace when empty
-        $this->assertEquals($model->provideFilter(), App\ModelFilters\UserFilter::class);
+        $this->assertEquals($this->model->provideFilter(), App\ModelFilters\UserFilter::class);
         // Filter Value
-        $this->assertEquals($model->provideFilter(App\ModelFilters\DynamicFilter\TestModelFilter::class), App\ModelFilters\DynamicFilter\TestModelFilter::class);
+        $this->assertEquals(
+            $this->model->provideFilter(App\ModelFilters\DynamicFilter\TestModelFilter::class),
+            App\ModelFilters\DynamicFilter\TestModelFilter::class
+        );
     }
 
     public function testGetModelFilterClass()
     {
-        $model = new User;
-        $this->assertEquals($model->getModelFilterClass(), EloquentFilter\TestClass\UserFilter::class);
+        $this->assertEquals($this->model->getModelFilterClass(), EloquentFilter\TestClass\UserFilter::class);
     }
 }
