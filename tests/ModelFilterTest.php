@@ -131,6 +131,16 @@ class ModelFilterTest extends TestCase
         $this->assertTrue($this->filter->relationIsLocal($related));
     }
 
+    public function testGetFilterInputForRelationsArray()
+    {
+        $this->filter->relations = [
+            'roles' => ['roles']
+        ];
+        $this->filter->push($this->testInput);
+
+        $this->assertEquals($this->filter->getRelatedFilterInput('roles'), ['roles' => $this->filter->input('roles')]);
+    }
+
     /**
      * @depends testRelatedMethodBooleans
      */
