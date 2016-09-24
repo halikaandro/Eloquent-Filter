@@ -134,7 +134,7 @@ class ModelFilterTest extends TestCase
     public function testGetFilterInputForRelationsArray()
     {
         $this->filter->relations = [
-            'roles' => ['roles']
+            'roles' => ['roles'],
         ];
         $this->filter->push($this->testInput);
 
