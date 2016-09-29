@@ -98,33 +98,28 @@ class UserController extends Controller
 ```
 composer require tucker-eric/eloquentfilter
 ```
-#### Define the default model filter
 
-Create a public method `modelFilter()` that returns `$this->provideFilter(Your\Model\Filter::class);` in your model.
+There are a few ways to define the filte a model will use:
 
-> Not definining a filter in your model will default the filter to `App\ModelFilters\{Model}Filter`. For example, in our user model the `filter()` method will use the `App\ModelFilters\UserFilter` if not otherwise defined.  `App\ModelFilters` namespace is used if there is no configuration file.
+- [Use EloquentFilter's Default Settings](#default-settings)
+- [Use A Custom Namespace For All Filters](#with-configuration-file-optional)
+- [Define A Model's Default Filter](#define-the-default-model-filter)
+- [Dynamically Select A Model's Filter](#dynamic-filters)
 
-```php
-<?php namespace App;
 
-use EloquentFilter\Filterable;
-use Illuminate\Database\Eloquent\Model;
+#### Default Settings
 
-class User extends Model
-{
-    use Filterable;
+The default namespace for all filters is `App\ModelFilters\` and each Model expects the filter classname to follow the `{$ModelName}Filter` naming convention regardless of the namespace the model is in.  Here is an example of Models and their respective filters based on the default naming convention.
 
-    public function modelFilter()
-    {
-    	return $this->provideFilter(App\ModelFilters\CustomFilters\CustomUserFilter::class);
-    }
+|Model|ModelFilter|
+|-----|-----------|
+|`App\User`|`App\ModelFilters\UserFilter`|
+|`App\FrontEnd\PrivatePost`|`App\ModelFilters\PrivatePostFilter`|
+|`App\FrontEnd\Public\GuestPost`|`App\ModelFilters\GuestPostFilter`|
 
-    //User Class
-}
-```
 
 #### With Configuration File (Optional)
-> Registering the service provider will give you access to the `php artisan model:filter {model}` command as well as allow you to publish the configuration file.  Registering the service provider is not required as long as you have a `modelFilter()` method on all models using the `EloquentFilter\Filterable` trait OR all your model filters reside in the `App\ModelFilters` namespace and follow the naming convention of `{Model}Filter`
+> Registering the service provider will give you access to the `php artisan model:filter {model}` command as well as allow you to publish the configuration file.  Registering the service provider is not required and only needed if you want to change the default namespace or use the artisan command
 
 After installing the Eloquent Filter library, register the `EloquentFilter\ServiceProvider::class` in your `config/app.php` configuration file:
 
@@ -148,7 +143,58 @@ In the `app/eloquentfilter.php` config file.  Set the namespace your model filte
 'namespace' => "App\\ModelFilters\\",
 ```
 
-#### Generating The Filter
+#### Define The Default Model Filter
+
+Create a public method `modelFilter()` that returns `$this->provideFilter(Your\Model\Filter::class);` in your model.
+
+```php
+<?php namespace App;
+
+use EloquentFilter\Filterable;
+use Illuminate\Database\Eloquent\Model;
+
+class User extends Model
+{
+    use Filterable;
+
+    public function modelFilter()
+    {
+    	return $this->provideFilter(App\ModelFilters\CustomFilters\CustomUserFilter::class);
+    }
+
+    //User Class
+}
+```
+#### Dynamic Filters
+
+You can define the filter dynamically by passing the filter to use as the second parameter of the `filter()` method.  Defining a filter dynamically will take precedent over any other filters defined for the model.
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+
+use App\Http\Requests;
+use App\User;
+use App\ModelFilters\Admin\UserFilter as AdminFilter;
+use App\ModelFilters\User\UserFilter as BasicUserFilter;
+use Auth;
+
+class UserController extends Controller
+{
+	public function index(Request $request)
+    {
+    	$userFilter = Auth::user()->isAdmin() ? AdminFilter::class : BasicUserFilter::class;
+
+        return User::filter($request->all(), $userFilter)->get();
+    }
+}
+
+```
+
+### Generating The Filter
 > Only available if you have registered `EloquentFilter\ServiceProvider::class` in the providers array in your `config/app.php'
 
 You can create a model filter with the following artisan command:
@@ -230,9 +276,23 @@ class UserFilter extends ModelFilter
 }
 ```
 
-> Note:  In the above example if you do not want `_id` dropped from the end of the input you can set `protected $drop_id = false` on your filter class.  Doing this would allow you to have a `company()` filter method as well as a `companyId()` filter method.
+> **Note:**  In the above example if you do not want `_id` dropped from the end of the input you can set `protected $drop_id = false` on your filter class.  Doing this would allow you to have a `company()` filter method as well as a `companyId()` filter method.
 
-> Note: In the example above all methods inside `setup()` will be called every time `filter()` is called on the model
+> **Note:** In the example above all methods inside `setup()` will be called every time `filter()` is called on the model
+
+
+#### Additional Filter Methods
+
+The `Filterable` trait also comes with the below query builder helper methods:
+
+|EloquentFilter Method|QueryBuilder Equivalent|
+|---|---|
+|`$this->whereLike($column, $string)`|`$query->where($column, 'LIKE', '%'.$string.'%')`|
+|`$this->whereBeginsWith($column, $string)`|`$query->where($column, 'LIKE', $string.'%')`|
+|`$this->whereEndsWith($column, $string)`|`$query->where($column, 'LIKE', '%'.$string)`|
+
+Since these methods are part of the `Filterable` trait they are accessible from any model that implements the trait without the need to call in the Model's EloquentFilter.
+
 
 ### Applying The Filter To A Model
 
@@ -264,7 +324,7 @@ class UserController extends Controller
 }
 ```
 
-#### Filtering By Relationships
+## Filtering By Relationships
 >There are two ways to filter by related models.  Using the `$relations` array to define the input to be injected into the related Model's filter.  If the related model doesn't have a model filter of it's own or you just want to define how to filter that relationship locally instead of adding the logic to that Model's filter then use the `related()` method to filter by a related model that doesn't have a ModelFilter.  You can even combine the 2 and define which input fields in the `$relations` array you want to use that Model's filter for as well as use the `related()` method to define local methods on that same relation.  Both methods nest the filter constraints into the same `whereHas()` query on that relation.
 
 For both examples we will use the following models:
@@ -302,6 +362,7 @@ class Client extends Model
 }
 ```
 
+
 We want to query our users and filter them by the industry and volume potential of their clients that have done revenue in the past.
 
 Input used to filter:
@@ -313,10 +374,9 @@ $input = [
 ];
 ```
 
-##### Setup
+### Setup
 
 Both methods will invoke a setup query on the relationship that will be called EVERY time this relationship is queried.  The setup methods signature is `{$related}Setup()` and is injected with an instance of that relations query builder.  For this example let's say when querying users by their clients I only ever want to show agents that have clients with revenue. Without choosing wich method to put it in (because sometimes we may not have all the input and miss the scope all together if we choose the wrong one) and to avoid query duplication by placing that constraint on ALL methods for that relation we call the related setup method in the `UserFilter` like:
-> You can learn more about scopes [here](https://laravel.com/docs/master/eloquent#local-scopes)
 
 ```php
 class UserFilter extends ModelFilter
@@ -329,11 +389,17 @@ class UserFilter extends ModelFilter
 ```
 This prepend all queries with the `hasRevenue()` whenever the `UserFilter` runs any constriants on the `clients()` relationship.  If there are no queries to the `clients()` relationship then this method will not be invoked.
 
-#### Ways To Filter Related Models 
+> You can learn more about scopes [here](https://laravel.com/docs/master/eloquent#local-scopes)
 
-We'll go over the `related()` method first since it is a little easier and requires less setup.
 
-##### To filter a related model using the `related()` method:
+### Ways To Filter Related Models 
+
+- [With The `related()` Method](#filter-related-models-with-the-related-method)
+- [Using The `$relations` Array](#filter-related-models-using-the-relations-array)
+- [With Both Methods](#filter-related-models-with-both-methods)
+
+#### Filter Related Models With The `related()` Method:
+
 The `related()` method is a little easier to setup and is great if you aren't going to be using the related Model's filter to ever filter that Model explicitly.  The `related()` method takes the same parameters as the `Eloquent\Builder`'s `where()` method except for the first parameter being the relationship name.
 
 ##### Example:
@@ -366,7 +432,8 @@ Or you can even pass a closure as the second argument which will inject an insta
     });
 ```
 
-##### To filter a related model using the `$relations` array:
+#### Filter Related Models Using The `$relations` Array:
+
 Add the relation in the `$relations` array with the name of the relation as referred to on the model as the key and an array of input keys that was passed to the `filter()` method.
 
 The related model **MUST** have a ModelFilter associated with it.  We instantiate the related model's filter and use the input values from the `$relations` array to call the associated methods.
@@ -405,6 +472,7 @@ class ClientFilter extends ModelFilter
     }
 }
 ```
+#### Filter Related Models With Both Methods
 You can even use both together and it will produce the same result and only query the related model once.  An example would be:
 
 If the following array is passed to the `filter()` method:
@@ -472,6 +540,7 @@ class UserFilter extends ModelFilter
 ```
 
 ##### Adding Relation Values To Filter
+
 Sometimes, based on the value of a parameter you may need to push data to a relation filter.  The `push()` method does just this.
 It accepts one argument as an array of key value pairs or to arguments as a key value pair `push($key, $value)`.
 Related models are filtered AFTER all local values have been executed you can use this method in any filter method.
@@ -494,6 +563,7 @@ The above example will pass `'all'` to the `stats()` method on the `clients` rel
 > Calling the `push()` method in the `setup()` method will allow you to push values to the input for filter it's called on
 
 #### Pagination
+
 If you want to paginate your query and keep the url query string without having to use:
 
 ```php
@@ -527,43 +597,6 @@ OR:
 
 In your view `$users->render()` will return pagination links as it normally would but with the original query string with empty input ignored.
 
-#### Dynamic Filters
-Sometimes you need a dynamic way to change filters on a model or maybe use multiple filters on a model.  To define a dynamic filter just pass the filter as the second parameter of the `filter()` method:
-
-```php
-<?php
-
-namespace App\Http\Controllers;
-
-use Illuminate\Http\Request;
-
-use App\Http\Requests;
-use App\User;
-use App\ModelFilters\Admin\UserFilter as AdminFilter;
-use App\ModelFilters\User\UserFilter as BasicUserFilter;
-use Auth;
-
-class UserController extends Controller
-{
-	public function index(Request $request)
-    {
-    	$userFilter = Auth::user()->isAdmin() ? AdminFilter::class : BasicUserFilter::class;
-
-        return User::filter($request->all(), $userFilter)->get();
-    }
-}
-
-```
-#### Additional Filter Methods
-The `Filterable` trait also comes with the below query builder helper methods:
-
-|EloquentFilter Method|QueryBuilder Equivalent|
-|---|---|
-|`$this->whereLike($column, $string)`|`$query->where($column, 'LIKE', '%'.$string.'%')`|
-|`$this->whereBeginsWith($column, $string)`|`$query->where($column, 'LIKE', $string.'%')`|
-|`$this->whereEndsWith($column, $string)`|`$query->where($column, 'LIKE', '%'.$string)`|
-
-Since these methods are part of the `Filterable` trait they are accessible from any model that implements the trait without the need to call in the Model's EloquentFilter.
 
 # Contributing
 Any contributions welcome!
