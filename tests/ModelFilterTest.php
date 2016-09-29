@@ -14,17 +14,17 @@ class ModelFilterTest extends TestCase
 
     protected $config;
 
-    public function tearDown()
-    {
-        m::close();
-    }
-
     public function setUp()
     {
-        $this->builder = m::mock('builder');
+        $this->builder = m::mock(Illuminate\Database\Eloquent\Builder::class);
         $this->filter = new ModelFilter($this->builder);
         $this->config = require __DIR__.'/config.php';
         $this->testInput = $this->config['test_input'];
+    }
+
+    public function tearDown()
+    {
+        m::close();
     }
 
     public function testRemoveEmptyInput()
@@ -124,11 +124,21 @@ class ModelFilterTest extends TestCase
         $related = 'fakeRelation';
         $this->assertFalse($this->filter->relationIsLocal($related));
 
-        $this->filter->related($related, function($query) {
+        $this->filter->related($related, function ($query) {
             return $query->whereRaw('1 = 1');
         });
 
         $this->assertTrue($this->filter->relationIsLocal($related));
+    }
+
+    public function testGetFilterInputForRelationsArray()
+    {
+        $this->filter->relations = [
+            'roles' => ['roles'],
+        ];
+        $this->filter->push($this->testInput);
+
+        $this->assertEquals($this->filter->getRelatedFilterInput('roles'), ['roles' => $this->filter->input('roles')]);
     }
 
     /**
@@ -138,7 +148,7 @@ class ModelFilterTest extends TestCase
     {
         $this->assertEquals($this->filter->getLocalRelation('testRelation'), []);
 
-        $closure = function($query) {
+        $closure = function ($query) {
             return $query->where('id', 1);
         };
 
@@ -150,7 +160,7 @@ class ModelFilterTest extends TestCase
 
         $this->assertTrue(is_callable($relatedClosures[0]));
 
-        $query = m::mock(Illuminate\Database\Query\Builder::class);
+        $query = m::mock(Illuminate\Database\Eloquent\Builder::class);
 
         $query->shouldReceive('where')->with('id', 1)->once();
 
@@ -162,9 +172,7 @@ class ModelFilterTest extends TestCase
      */
     public function testWhereRelatedMethodWithoutValue()
     {
-        $related = 'fakeRelation';
-
-        $this->filter->related($related, 'id', 1);
+        $this->filter->related('fakeRelation', 'id', 1);
 
         $relatedClosures = $this->filter->getLocalRelation('fakeRelation');
 
@@ -180,9 +188,7 @@ class ModelFilterTest extends TestCase
      */
     public function testWhereRelatedMethodWithValue()
     {
-        $related = 'fakeRelation';
-
-        $this->filter->related($related, 'id', '>=' ,1, 'or');
+        $this->filter->related('fakeRelation', 'id', '>=', 1, 'or');
 
         $relatedClosures = $this->filter->getLocalRelation('fakeRelation');
 
