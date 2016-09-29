@@ -99,7 +99,7 @@ class UserController extends Controller
 composer require tucker-eric/eloquentfilter
 ```
 
-There are a few ways to define the filte a model will use:
+There are a few ways to define the filter a model will use:
 
 - [Use EloquentFilter's Default Settings](#default-settings)
 - [Use A Custom Namespace For All Filters](#with-configuration-file-optional)
