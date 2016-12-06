@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Builder as QueryBuilder;
  * @method  QueryBuilder whereDoesntHave(string $relation, \Closure $callback = null)
  * @method  QueryBuilder selectRaw(string $expression, array $bindings = [])
  * @method  QueryBuilder selectSub(\Closure|QueryBuilder|string $query, string $as)
- * @method  QueryBuilder whereRaw(string $sql, mixed $bindings = [], string $boolean = 'and')
+ * @method  QueryBuilder whereRaw(string $sql, array $bindings = [], string $boolean = 'and')
  * @method  QueryBuilder whereBetween(string $column, array $values, string $boolean = 'and', bool $not = false)
  * @method  QueryBuilder whereNotBetween(string $column, array $values, string $boolean = 'and')
  * @method  QueryBuilder whereNested(\Closure $callback, string $boolean = 'and')
