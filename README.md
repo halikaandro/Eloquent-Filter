@@ -137,7 +137,7 @@ Copy the package config to your local config with the publish command:
 php artisan vendor:publish --provider="EloquentFilter\ServiceProvider"
 ```
 
-In the `app/eloquentfilter.php` config file.  Set the namespace your model filters will reside in:
+In the `config/eloquentfilter.php` config file.  Set the namespace your model filters will reside in:
 
 ```php
 'namespace' => "App\\ModelFilters\\",
