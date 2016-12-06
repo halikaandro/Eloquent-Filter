@@ -109,7 +109,7 @@ class MakeEloquentFilter extends Command
         $className = array_pop($parts);
         $ns = count($parts) > 0 ? implode('\\', $parts).'\\' : '';
 
-        $this->class = config('eloquentfilter.namespace').$ns.studly_case($className);
+        $this->class = config('eloquentfilter.namespace', 'App\\ModelFilters\\').$ns.studly_case($className);
 
         if (substr($this->class, -6, 6) !== 'Filter') {
             $this->class = (substr($this->class, -6, 6) === 'filter' ? str_replace('filter', '', $this->class) : $this->class).'Filter';
