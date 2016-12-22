@@ -5,27 +5,7 @@ namespace EloquentFilter;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 
 /**
- * @method  QueryBuilder where(string $column, string $operator = null, mixed $value = null, string $boolean = 'and')
- * @method  QueryBuilder doesntHave(string $relation, string $boolean = 'and', \Closure $callback = null)
- * @method  QueryBuilder whereHas(string $relation, \Closure $callback, string $operator = '>=', int $count = 1)
- * @method  QueryBuilder whereDoesntHave(string $relation, \Closure $callback = null)
- * @method  QueryBuilder selectRaw(string $expression, array $bindings = [])
- * @method  QueryBuilder selectSub(\Closure|QueryBuilder|string $query, string $as)
- * @method  QueryBuilder whereRaw(string $sql, array $bindings = [], string $boolean = 'and')
- * @method  QueryBuilder whereBetween(string $column, array $values, string $boolean = 'and', bool $not = false)
- * @method  QueryBuilder whereNotBetween(string $column, array $values, string $boolean = 'and')
- * @method  QueryBuilder whereNested(\Closure $callback, string $boolean = 'and')
- * @method  QueryBuilder whereExists(\Closure $callback, string $boolean = 'and', bool $not = false)
- * @method  QueryBuilder whereIn(string $column, mixed $values, string $boolean = 'and', bool $not = false)
- * @method  QueryBuilder whereNotIn(string $column, mixed $values, string $boolean = 'and')
- * @method  QueryBuilder whereNotNull(string $column, string $boolean = 'and')
- * @method  QueryBuilder whereDate(string $column, string $operator, int $value, string $boolean = 'and')
- * @method  QueryBuilder whereDay(string $column, string $operator, int $value, string $boolean = 'and')
- * @method  QueryBuilder whereMonth(string $column, string $operator, int $value, string $boolean = 'and')
- * @method  QueryBuilder whereYear(string $column, string $operator, int $value, string $boolean = 'and')
- * @method  QueryBuilder orderBy(string $column, string $direction = 'asc')
- * @method  QueryBuilder limit(int $value)
- * @method  QueryBuilder withTrashed()
+ * @mixin QueryBuilder
  */
 class ModelFilter
 {
@@ -59,7 +39,7 @@ class ModelFilter
     protected $input;
 
     /**
-     * @var \Illuminate\Database\Eloquent\Builder
+     * @var QueryBuilder
      */
     protected $query;
 
@@ -100,10 +80,9 @@ class ModelFilter
     }
 
     /**
-     * Handle calling methods on the query object.
-     *
      * @param $method
      * @param $args
+     * @return mixed
      */
     public function __call($method, $args)
     {
