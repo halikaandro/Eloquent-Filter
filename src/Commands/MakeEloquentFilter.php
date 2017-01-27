@@ -4,11 +4,12 @@ namespace EloquentFilter\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Console\AppNamespaceDetectorTrait;
+use EloquentFilter\Commands\Traits\NamespaceDetector;
 
 class MakeEloquentFilter extends Command
 {
-    use AppNamespaceDetectorTrait;
+    use NamespaceDetector;
+
     /**
      * The name and signature of the console command.
      *
@@ -57,7 +58,7 @@ class MakeEloquentFilter extends Command
     public function handle()
     {
         $this->makeClassName()->compileStub();
-        $this->info(class_basename($this->class).' Created Successfully!');
+        $this->info(class_basename($this->getClassName()).' Created Successfully!');
     }
 
     public function compileStub()
@@ -73,16 +74,16 @@ class MakeEloquentFilter extends Command
 
     public function applyValuesToStub($stub)
     {
-        $className = class_basename($this->class);
+        $className = class_basename($this->getClassName());
         $search = ['{{class}}', '{{namespace}}'];
-        $replace = [$className, str_replace('\\'.$className, '', $this->class)];
+        $replace = [$className, str_replace('\\'.$className, '', $this->getClassName())];
 
         return str_replace($search, $replace, $stub);
     }
 
     public function getPath()
     {
-        return app_path(str_replace([$this->getAppNamespace(), '\\'], ['', '/'], $this->class.'.php'));
+        return app_path(str_replace([$this->getAppNamespace(), '\\'], ['', '/'], $this->getClassName().'.php'));
     }
 
     /**
@@ -105,21 +106,35 @@ class MakeEloquentFilter extends Command
      */
     public function makeClassName()
     {
-        $parts = explode('\\', $this->argument('name'));
+        $parts = array_map('studly_case', explode('\\', $this->argument('name')));
         $className = array_pop($parts);
         $ns = count($parts) > 0 ? implode('\\', $parts).'\\' : '';
 
-        $this->class = config('eloquentfilter.namespace', 'App\\ModelFilters\\').$ns.studly_case($className);
+        $fqClass = config('eloquentfilter.namespace', 'App\\ModelFilters\\').$ns.$className;
 
-        if (substr($this->class, -6, 6) !== 'Filter') {
-            $this->class = (substr($this->class, -6, 6) === 'filter' ? str_replace('filter', '', $this->class) : $this->class).'Filter';
+        if (substr($fqClass, - 6, 6) !== 'Filter') {
+            $fqClass .= 'Filter';
         }
 
-        if (class_exists($this->class)) {
-            $this->error("\n\n\t".$this->class.' Already Exists!'."\n");
+        $this->setClassName($fqClass);
+
+        if (class_exists($this->getClassName())) {
+            $this->error("\n\n\t".$this->getClassName().' Already Exists!'."\n");
             die;
         }
 
         return $this;
+    }
+
+    public function setClassName($name)
+    {
+        $this->class = $name;
+
+        return $this;
+    }
+
+    public function getClassName()
+    {
+        return $this->class;
     }
 }
