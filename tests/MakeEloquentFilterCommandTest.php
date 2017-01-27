@@ -2,12 +2,9 @@
 
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
-use EloquentFilter\Commands\Traits\NamespaceDetector;
 
 class MakeEloquentFilterCommandTest extends TestCase
 {
-    use NamespaceDetector;
-
     protected $filesystem;
 
     protected $command;
@@ -31,11 +28,6 @@ class MakeEloquentFilterCommandTest extends TestCase
         $this->command->shouldReceive('argument')->andReturn($argument);
         $this->command->makeClassName();
         $this->assertEquals("App\\ModelFilters\\$class", $this->command->getClassName());
-    }
-
-    public function testGetAppNamespace()
-    {
-        dd($this->getAppNamespace());
     }
 
     public function modelClassProvider()
