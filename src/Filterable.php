@@ -52,10 +52,7 @@ trait Filterable
     public function scopePaginateFilter($query, $perPage = null, $columns = ['*'], $pageName = 'page', $page = null)
     {
         $paginator = $query->paginate($perPage, $columns, $pageName, $page);
-
-        foreach ($this->filtered as $key => $val) {
-            $paginator->addQuery($key, $val);
-        }
+        $paginator->appends($this->filtered);
 
         return $paginator;
     }
@@ -73,10 +70,7 @@ trait Filterable
     public function scopeSimplePaginateFilter($query, $perPage = null, $columns = ['*'], $pageName = 'page')
     {
         $paginator = $query->simplePaginate($perPage, $columns, $pageName);
-
-        foreach ($this->filtered as $key => $val) {
-            $paginator->addQuery($key, $val);
-        }
+        $paginator->appends($this->filtered);
 
         return $paginator;
     }
