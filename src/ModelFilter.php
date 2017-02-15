@@ -102,7 +102,7 @@ class ModelFilter
         $filterableInput = [];
 
         foreach ($input as $key => $val) {
-            if ($val !== '') {
+            if ($val !== '' && $val !== null) {
                 $filterableInput[$key] = $val;
             }
         }
