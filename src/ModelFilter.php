@@ -306,7 +306,7 @@ class ModelFilter
             $this->_joinedTables = $this->getJoinedTables();
         }
 
-        return in_array($this->getRelatedTable($relation), $this->_joinedTables);
+        return in_array($this->getRelatedTable($relation), $this->_joinedTables, true);
     }
 
     /**
@@ -346,7 +346,6 @@ class ModelFilter
      * Filters by a relationship that isn't joined by using that relation's ModelFilter.
      *
      * @param $related
-     * @param $filterableInput
      */
     public function filterUnjoinedRelation($related)
     {
