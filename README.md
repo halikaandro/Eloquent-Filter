@@ -18,7 +18,7 @@ Lets say we want to return a list of users filtered by multiple parameters. When
 
 ```php
 [
-	'name' 		 => 'er',
+    'name'       => 'er',
     'last_name'  => '',
     'company_id' => '2',
     'roles'      => ['1','4','7'],
@@ -29,10 +29,11 @@ Lets say we want to return a list of users filtered by multiple parameters. When
 To filter by all those parameters we would need to do something like:
 
 ```php
-<?php namespace App\Http\Controllers;
+<?php
+
+namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
 use App\Http\Requests;
 use App\User;
 
@@ -41,7 +42,7 @@ class UserController extends Controller
 
     public function index(Request $request)
     {
-    	$query = User::where('company_id', $request->input('company_id'));
+        $query = User::where('company_id', $request->input('company_id'));
 
         if ($request->has('last_name'))
         {
@@ -75,19 +76,20 @@ class UserController extends Controller
 To filter that same input With Eloquent Filters:
 
 ```php
-<?php namespace App\Http\Controllers;
+<?php
+
+namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
 use App\Http\Requests;
 use App\User;
 
 class UserController extends Controller
 {
 
-	public function index(Request $request)
+    public function index(Request $request)
     {
-    	return User::filter($request->all())->get();
+        return User::filter($request->all())->get();
     }
 
 }
@@ -148,7 +150,9 @@ In the `config/eloquentfilter.php` config file.  Set the namespace your model fi
 Create a public method `modelFilter()` that returns `$this->provideFilter(Your\Model\Filter::class);` in your model.
 
 ```php
-<?php namespace App;
+<?php
+
+namespace App;
 
 use EloquentFilter\Filterable;
 use Illuminate\Database\Eloquent\Model;
@@ -159,7 +163,7 @@ class User extends Model
 
     public function modelFilter()
     {
-    	return $this->provideFilter(App\ModelFilters\CustomFilters\CustomUserFilter::class);
+        return $this->provideFilter(App\ModelFilters\CustomFilters\CustomUserFilter::class);
     }
 
     //User Class
@@ -175,7 +179,6 @@ You can define the filter dynamically by passing the filter to use as the second
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
 use App\Http\Requests;
 use App\User;
 use App\ModelFilters\Admin\UserFilter as AdminFilter;
@@ -184,9 +187,9 @@ use Auth;
 
 class UserController extends Controller
 {
-	public function index(Request $request)
+    public function index(Request $request)
     {
-    	$userFilter = Auth::user()->isAdmin() ? AdminFilter::class : BasicUserFilter::class;
+        $userFilter = Auth::user()->isAdmin() ? AdminFilter::class : BasicUserFilter::class;
 
         return User::filter($request->all(), $userFilter)->get();
     }
@@ -230,18 +233,21 @@ To define methods for the following input:
 
 ```php
 [
-	'company_id'   => 5,
-	'name'         => 'Tuck',
-	'mobile_phone' => '888555'
+    'company_id'   => 5,
+    'name'         => 'Tuck',
+    'mobile_phone' => '888555'
 ]
 ```
 
 You would use the following methods:
 
 ```php
+
+use EloquentFilter\ModelFilter;
+
 class UserFilter extends ModelFilter
 {
-	// This will filter 'company_id' OR 'company'
+    // This will filter 'company_id' OR 'company'
     public function company($id)
     {
         return $this->where('company_id', $id);
@@ -261,7 +267,7 @@ class UserFilter extends ModelFilter
         return $this->where('mobile_phone', 'LIKE', "$phone%");
     }
 
-	public function setup()
+    public function setup()
     {
         $this->onlyShowDeletedForAdmins();
     }
@@ -299,7 +305,9 @@ Since these methods are part of the `Filterable` trait they are accessible from 
 Implement the `EloquentFilter\Filterable` trait on any Eloquent model:
 
 ```php
-<?php namespace App;
+<?php
+
+namespace App;
 
 use EloquentFilter\Filterable;
 use Illuminate\Database\Eloquent\Model;
@@ -317,7 +325,7 @@ This gives you access to the `filter()` method that accepts an array of input:
 ```php
 class UserController extends Controller
 {
-	public function index(Request $request)
+    public function index(Request $request)
     {
         return User::filter($request->all())->get();
     }
@@ -338,7 +346,7 @@ class User extends Model
 
     public function clients()
     {
-    	return $this->hasMany(Client::class);
+        return $this->hasMany(Client::class);
     }
 }
 ```
@@ -352,12 +360,12 @@ class Client extends Model
 
     public function industry()
     {
-    	return $this->belongsTo(Industry::class);
+        return $this->belongsTo(Industry::class);
     }
     
     public function scopeHasRevenue($query)
     {
-    	return $query->where('total_revenue', '>', 0);
+        return $query->where('total_revenue', '>', 0);
     }
 }
 ```
@@ -369,7 +377,7 @@ Input used to filter:
 
 ```php
 $input = [
-	'industry' 		   => '5',
+    'industry'         => '5',
     'potential_volume' => '10000'
 ];
 ```
@@ -381,9 +389,9 @@ Both methods will invoke a setup query on the relationship that will be called E
 ```php
 class UserFilter extends ModelFilter
 {
-	public function clientsSetup($query)
+    public function clientsSetup($query)
     {
-    	return $query->hasRevenue();
+        return $query->hasRevenue();
     }
 }
 ```
@@ -410,9 +418,9 @@ The `related()` method is a little easier to setup and is great if you aren't go
 ```php
 class UserFilter extends ModelFilter
 {
-	public function industry($id)
+    public function industry($id)
     {
-    	return $this->related('clients', 'industry_id', '=', $id);
+        return $this->related('clients', 'industry_id', '=', $id);
         
         // This would also be shorthand for the same query
         // return $this->related('clients', 'industry_id', $id);
@@ -420,15 +428,16 @@ class UserFilter extends ModelFilter
     
     public function potentialVolume($volume)
     {
-    	return $this->related('clients', 'potential_volume', '>=', $volume);
+        return $this->related('clients', 'potential_volume', '>=', $volume);
     }
 }
 ```
 
 Or you can even pass a closure as the second argument which will inject an instance of the related model's query builder like:
+
 ```php
-	$this->related('clients', function($query) use ($id) {
-    	return $query->where('industry_id', $id);
+    $this->related('clients', function($query) use ($id) {
+        return $query->where('industry_id', $id);
     });
 ```
 
@@ -447,7 +456,7 @@ This is helpful when querying multiple columns on a relation's table while avoid
 ```php
 class UserFilter extends ModelFilter
 {
-	public $relations = [
+    public $relations = [
         'clients' => ['industry', 'potential_volume'],
     ];
 }
@@ -459,16 +468,16 @@ class UserFilter extends ModelFilter
 ```php
 class ClientFilter extends ModelFilter
 {
-	public $relations = [];
+    public $relations = [];
 
     public function industry($id)
     {
-    	return $this->where('industry_id', $id);
-	}
+        return $this->where('industry_id', $id);
+    }
     
     public function potentialVolume($volume)
     {
-    	return $this->where('potential_volume', '>=', $volume);
+        return $this->where('potential_volume', '>=', $volume);
     }
 }
 ```
@@ -479,11 +488,11 @@ If the following array is passed to the `filter()` method:
 
 ```php
 [
-	'name' 		 		=> 'er',
-    'last_name'  		=> ''
-    'company_id' 		=> 2,
-    'roles'      		=> [1,4,7],
-    'industry'   		=> 5,
+    'name'             => 'er',
+    'last_name'        => ''
+    'company_id'       => 2,
+    'roles'            => [1,4,7],
+    'industry'         => 5,
     'potential_volume' => '10000'
 ]
 ```
@@ -497,43 +506,43 @@ use EloquentFilter\ModelFilter;
 
 class UserFilter extends ModelFilter
 {
-	public $relations = [
+    public $relations = [
         'clients' => ['industry'],
     ];
     
     public function clientsSetup($query)
     {
-    	return $query->hasRevenue();
+        return $query->hasRevenue();
     }
 
-	public function name($name)
+    public function name($name)
     {
-    	return $this->where(function($q)
+        return $this->where(function($q)
         {
-        	return $q->where('first_name', 'LIKE', $name . '%')->orWhere('last_name', 'LIKE', '%' . $name.'%');
+            return $q->where('first_name', 'LIKE', $name . '%')->orWhere('last_name', 'LIKE', '%' . $name.'%');
         });
     }
     
     public function potentialVolume($volume)
     {
-    	return $this->related('clients', 'potential_volume', '>=', $volume);
+        return $this->related('clients', 'potential_volume', '>=', $volume);
     }
 
     public function lastName($lastName)
     {
-    	return $this->where('last_name', 'LIKE', '%' . $lastName);
+        return $this->where('last_name', 'LIKE', '%' . $lastName);
     }
 
     public function company($id)
     {
-    	return $this->where('company_id',$id);
+        return $this->where('company_id',$id);
     }
 
     public function roles($ids)
     {
-    	return $this->whereHas('roles', function($query) use ($ids)
+        return $this->whereHas('roles', function($query) use ($ids)
         {
-        	return $query->whereIn('id', $ids);
+            return $query->whereIn('id', $ids);
         });
     }
 }
@@ -575,7 +584,7 @@ The `paginateFilter()` and `simplePaginateFilter()` methods accept the same inpu
 ```php
 class UserController extends Controller
 {
-	public function index(Request $request)
+    public function index(Request $request)
     {
         $users = User::filter($request->all())->paginateFilter();
 
