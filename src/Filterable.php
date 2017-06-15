@@ -4,8 +4,6 @@ namespace EloquentFilter;
 
 trait Filterable
 {
-    protected $filter;
-
     /**
      * Array of input used to filter the query.
      *
