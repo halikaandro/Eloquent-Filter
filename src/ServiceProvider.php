@@ -2,6 +2,7 @@
 
 namespace EloquentFilter;
 
+use EloquentFilter\Commands\MakeEloquentFilter;
 use Illuminate\Support\ServiceProvider as LaravelServiceProvider;
 
 class ServiceProvider extends LaravelServiceProvider
@@ -18,21 +19,13 @@ class ServiceProvider extends LaravelServiceProvider
         ]);
     }
 
-    /**
+     /**
      * Register any application services.
      *
      * @return void
      */
     public function register()
     {
-        $this->registerFilterGeneratorCommand();
-    }
-
-    private function registerFilterGeneratorCommand()
-    {
-        $this->app->singleton('command.eloquentfilter.make', function ($app) {
-            return $app['EloquentFilter\Commands\MakeEloquentFilter'];
-        });
-        $this->commands('command.eloquentfilter.make');
+        $this->commands(MakeEloquentFilter::class);
     }
 }

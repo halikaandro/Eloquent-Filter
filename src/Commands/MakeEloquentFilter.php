@@ -4,12 +4,9 @@ namespace EloquentFilter\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
-use EloquentFilter\Commands\Traits\NamespaceDetector;
 
 class MakeEloquentFilter extends Command
 {
-    use NamespaceDetector;
-
     /**
      * The name and signature of the console command.
      *
@@ -83,7 +80,17 @@ class MakeEloquentFilter extends Command
 
     public function getPath()
     {
-        return app_path(str_replace([$this->getAppNamespace(), '\\'], ['', '/'], $this->getClassName().'.php'));
+        return $this->laravel->path.DIRECTORY_SEPARATOR.$this->getFileName();
+    }
+
+    public function getFileName()
+    {
+        return str_replace([$this->getAppNamespace(), '\\'], ['', DIRECTORY_SEPARATOR], $this->getClassName().'.php');
+    }
+
+    public function getAppNamespace()
+    {
+        return $this->laravel->getNamespace();
     }
 
     /**
