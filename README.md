@@ -110,7 +110,6 @@ There are a few ways to define the filter a model will use:
 
 
 #### Default Settings
-
 The default namespace for all filters is `App\ModelFilters\` and each Model expects the filter classname to follow the `{$ModelName}Filter` naming convention regardless of the namespace the model is in.  Here is an example of Models and their respective filters based on the default naming convention.
 
 |Model|ModelFilter|
@@ -119,8 +118,10 @@ The default namespace for all filters is `App\ModelFilters\` and each Model expe
 |`App\FrontEnd\PrivatePost`|`App\ModelFilters\PrivatePostFilter`|
 |`App\FrontEnd\Public\GuestPost`|`App\ModelFilters\GuestPostFilter`|
 
+#### Laravel
 
-#### With Configuration File (Optional)
+##### With Configuration File (Optional)
+
 > Registering the service provider will give you access to the `php artisan model:filter {model}` command as well as allow you to publish the configuration file.  Registering the service provider is not required and only needed if you want to change the default namespace or use the artisan command
 
 After installing the Eloquent Filter library, register the `EloquentFilter\ServiceProvider::class` in your `config/app.php` configuration file:
@@ -143,6 +144,26 @@ In the `config/eloquentfilter.php` config file.  Set the namespace your model fi
 
 ```php
 'namespace' => "App\\ModelFilters\\",
+```
+
+#### Lumen
+
+##### Register The Service Provider (Optional)
+
+>This is only required if you want to use the `php artisan model:filter` command.
+
+In `bootstrap/app.php`:
+
+```php
+$app->register(EloquentFilter\LumenServiceProvider::class);
+```
+
+##### Change The Default Namespace
+
+In `bootstrap/app.php`:
+
+```php
+config(['eloquentfilter.namespace' => "App\\Models\\ModelFilters\\"]);
 ```
 
 #### Define The Default Model Filter
