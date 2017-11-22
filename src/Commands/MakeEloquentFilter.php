@@ -123,12 +123,12 @@ class MakeEloquentFilter extends Command
             $fqClass .= 'Filter';
         }
 
-        $this->setClassName($fqClass);
-
-        if (class_exists($this->getClassName())) {
-            $this->error("\n\n\t".$this->getClassName().' Already Exists!'."\n");
+        if (class_exists($fqClass)) {
+            $this->error("\n\n\t$fqClass Already Exists!\n");
             die;
         }
+
+        $this->setClassName($fqClass);
 
         return $this;
     }
