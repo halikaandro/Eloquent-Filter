@@ -77,7 +77,7 @@ trait Filterable
      * Returns ModelFilter class to be instantiated.
      *
      * @param null|string $filter
-     * @return ModelFilter
+     * @return string
      */
     public function provideFilter($filter = null)
     {
@@ -91,7 +91,7 @@ trait Filterable
     /**
      * Returns the ModelFilter for the current model.
      *
-     * @return ModelFilter
+     * @return string
      */
     public function getModelFilterClass()
     {
