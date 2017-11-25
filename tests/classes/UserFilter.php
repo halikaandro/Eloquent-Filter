@@ -12,5 +12,17 @@ class UserFilter extends ModelFilter
      *
      * @var array
      */
-    public $relations = [];
+    public $relations = [
+        'clients' => ['client_name']
+    ];
+
+    public function setup()
+    {
+        return $this;
+    }
+
+    public function clientsSetup()
+    {
+        return $this;
+    }
 }

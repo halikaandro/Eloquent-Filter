@@ -12,5 +12,7 @@ class ClientFilter extends ModelFilter
      *
      * @var array
      */
-    public $relations = [];
+    public $relations = [
+        'user' => ['owner_name']
+    ];
 }

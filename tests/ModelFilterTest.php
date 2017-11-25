@@ -18,7 +18,7 @@ class ModelFilterTest extends TestCase
     {
         $this->builder = m::mock(Illuminate\Database\Eloquent\Builder::class);
         $this->filter = new ModelFilter($this->builder);
-        $this->config = require __DIR__.'/config.php';
+        $this->config = require __DIR__ . '/config.php';
         $this->testInput = $this->config['test_input'];
     }
 
@@ -46,7 +46,7 @@ class ModelFilterTest extends TestCase
         $this->filter->push([
             'company_id' => '2',
             'roles'      => ['1', '4', '7'],
-            ]);
+        ]);
 
         $this->assertEquals($this->filter->input(), [
             'name'       => 'er',
@@ -197,5 +197,25 @@ class ModelFilterTest extends TestCase
         $query->shouldReceive('where')->with('id', '>=', 1, 'or')->once();
 
         $relatedClosures[0]->__invoke($query);
+    }
+
+    public function testCallsForwardToQueryBuilder()
+    {
+        $this->builder->shouldReceive('where')->with(1, '=', 1)->once();
+        $this->builder->shouldReceive('whereLike')->with(1, 1)->once();
+        $this->filter->where(1, '=', 1);
+        $this->filter->whereLike(1, 1);
+    }
+
+    public function testHandleReturnsBuilder()
+    {
+        $this->assertEquals($this->builder, $this->filter->handle());
+    }
+
+    public function testSetupIsCalled()
+    {
+        $filter = m::mock('EloquentFilter\TestClass\UserFilter[setup]', [$this->builder]);
+        $filter->shouldReceive('setup')->once();
+        $filter->handle();
     }
 }
