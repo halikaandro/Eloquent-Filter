@@ -86,9 +86,7 @@ class ModelFilter
      */
     public function __call($method, $args)
     {
-        $class = method_exists($this, $method) ? $this : $this->query;
-
-        return call_user_func_array([$class, $method], $args);
+        return call_user_func_array([$this->query, $method], $args);
     }
 
     /**
