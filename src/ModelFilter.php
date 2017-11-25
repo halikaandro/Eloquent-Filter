@@ -86,7 +86,11 @@ class ModelFilter
      */
     public function __call($method, $args)
     {
-        return call_user_func_array([$this->query, $method], $args);
+        $resp = call_user_func_array([$this->query, $method], $args);
+
+        // Only return $this if query builder is returned
+        // We don't want to make actions to the builder unreachable
+        return $resp instanceof QueryBuilder ? $this : $resp;
     }
 
     /**
@@ -147,6 +151,7 @@ class ModelFilter
      * @param null $operator
      * @param null $value
      * @param string $boolean
+     * @return $this
      */
     public function related($relation, $column, $operator = null, $value = null, $boolean = 'and')
     {
@@ -163,6 +168,8 @@ class ModelFilter
                 return $query->where($column, $operator, $value, $boolean);
             });
         }
+
+        return $this;
     }
 
     /**
