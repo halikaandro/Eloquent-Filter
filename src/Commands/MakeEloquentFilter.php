@@ -65,7 +65,16 @@ class MakeEloquentFilter extends Command
             die;
         }
         $this->makeDirectory($path);
-        $tmp = $this->applyValuesToStub($this->files->get(__DIR__.'/../stubs/modelfilter.stub'));
+
+        $stubPath = config('eloquentfilter.generator.stub', __DIR__.'/../stubs/modelfilter.stub');
+
+        if(!$this->files->exists($stubPath) || !$this->files->isReadable($stubPath))
+        {
+            $this->error(sprintf('File "%s" does not exist or is unreadable.', $stubPath));
+            die;
+        }
+
+        $tmp = $this->applyValuesToStub($this->files->get($stubPath));
         $this->files->put($path, $tmp);
     }
 
