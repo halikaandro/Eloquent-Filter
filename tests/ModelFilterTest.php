@@ -3,20 +3,33 @@
 use Mockery as m;
 use EloquentFilter\ModelFilter;
 use PHPUnit\Framework\TestCase;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 
 class ModelFilterTest extends TestCase
 {
+    /**
+     * @var ModelFilter
+     */
     protected $filter;
 
+    /**
+     * @var \Illuminate\Database\Eloquent\Builder
+     */
     protected $builder;
 
+    /**
+     * @var array
+     */
     protected $testInput;
 
+    /**
+     * @var array
+     */
     protected $config;
 
     public function setUp()
     {
-        $this->builder = m::mock(Illuminate\Database\Eloquent\Builder::class);
+        $this->builder = m::mock(EloquentBuilder::class);
         $this->filter = new ModelFilter($this->builder);
         $this->config = require __DIR__.'/config.php';
         $this->testInput = $this->config['test_input'];
@@ -124,7 +137,7 @@ class ModelFilterTest extends TestCase
         $related = 'fakeRelation';
         $this->assertFalse($this->filter->relationIsLocal($related));
 
-        $this->filter->related($related, function ($query) {
+        $this->filter->related($related, function (EloquentBuilder $query) {
             return $query->whereRaw('1 = 1');
         });
 
@@ -148,23 +161,21 @@ class ModelFilterTest extends TestCase
     {
         $this->assertEquals($this->filter->getLocalRelation('testRelation'), []);
 
-        $closure = function ($query) {
-            return $query->where('id', 1);
-        };
-
         // Define Closure
-        $this->filter->related('testRelation', $closure);
+        $this->filter->related('testRelation', function (EloquentBuilder $query) {
+            return $query->where('id', 1);
+        });
 
         // Return closure
-        $relatedClosures = $this->filter->getLocalRelation('testRelation');
+        $relatedClosure = $this->filter->getLocalRelation('testRelation')[0];
 
-        $this->assertTrue(is_callable($relatedClosures[0]));
+        $this->assertInternalType('callable', $relatedClosure);
 
-        $query = m::mock(Illuminate\Database\Eloquent\Builder::class);
+        $query = m::mock(EloquentBuilder::class);
 
         $query->shouldReceive('where')->with('id', 1)->once();
 
-        $relatedClosures[0]->__invoke($query);
+        $relatedClosure($query);
     }
 
     /**
@@ -174,13 +185,15 @@ class ModelFilterTest extends TestCase
     {
         $this->filter->related('fakeRelation', 'id', 1);
 
-        $relatedClosures = $this->filter->getLocalRelation('fakeRelation');
+        $relatedClosure = $this->filter->getLocalRelation('fakeRelation')[0];
 
-        $query = m::mock(Illuminate\Database\Query\Builder::class);
+        $this->assertInternalType('callable', $relatedClosure);
+
+        $query = m::mock(EloquentBuilder::class);
 
         $query->shouldReceive('where')->with('id', '=', 1, 'and')->once();
 
-        $relatedClosures[0]->__invoke($query);
+        $relatedClosure($query);
     }
 
     /**
@@ -190,21 +203,33 @@ class ModelFilterTest extends TestCase
     {
         $this->filter->related('fakeRelation', 'id', '>=', 1, 'or');
 
-        $relatedClosures = $this->filter->getLocalRelation('fakeRelation');
+        $relatedClosure = $this->filter->getLocalRelation('fakeRelation')[0];
 
-        $query = m::mock(Illuminate\Database\Query\Builder::class);
+        $this->assertInternalType('callable', $relatedClosure);
+
+        $query = m::mock(EloquentBuilder::class);
 
         $query->shouldReceive('where')->with('id', '>=', 1, 'or')->once();
 
-        $relatedClosures[0]->__invoke($query);
+        $relatedClosure($query);
     }
 
     public function testCallsForwardToQueryBuilder()
     {
-        $this->builder->shouldReceive('where')->with(1, '=', 1)->once();
-        $this->builder->shouldReceive('whereLike')->with(1, 1)->once();
-        $this->filter->where(1, '=', 1);
-        $this->filter->whereLike(1, 1);
+        $this->builder->shouldReceive('where')->with(1, '=', 1)->once()->andReturnSelf();
+        $this->builder->shouldReceive('whereLike')->with(1, 1)->once()->andReturnSelf();
+        $this->assertEquals($this->filter, $this->filter->where(1, '=', 1));
+        $this->assertEquals($this->filter, $this->filter->whereLike(1, 1));
+    }
+
+    public function testCallsForwardedToBuilderReturnModelFilter()
+    {
+        $this->builder->shouldReceive('where')->with(1, '=', 1)->once()->andReturnSelf();
+        $this->builder->shouldReceive('whereLike')->with(1, 1)->once()->andReturnSelf();
+        $this->builder->shouldReceive('orWhere')->with(1, 1)->once()->andReturnSelf();
+        $this->assertEquals($this->filter, $this->filter->where(1, '=', 1));
+        $this->assertEquals($this->filter, $this->filter->whereLike(1, 1));
+        $this->assertEquals($this->filter, $this->filter->orWhere(1, 1));
     }
 
     public function testHandleReturnsBuilder()
@@ -216,7 +241,7 @@ class ModelFilterTest extends TestCase
     {
         $filter = m::mock('EloquentFilter\TestClass\UserFilter[setup]', [$this->builder]);
         $filter->shouldReceive('setup')->once();
-        $filter->handle();
+        $this->assertInstanceOf(EloquentBuilder::class, $filter->handle());
     }
 
     public function testRelatedReturnsFilter()
