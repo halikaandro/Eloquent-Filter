@@ -268,6 +268,8 @@ use EloquentFilter\ModelFilter;
 
 class UserFilter extends ModelFilter
 {
+    protected $blacklist = ['secretMethod'];
+    
     // This will filter 'company_id' OR 'company'
     public function company($id)
     {
@@ -300,12 +302,35 @@ class UserFilter extends ModelFilter
             $this->withTrashed();
         }
     }
+    
+    public function secretMethod($secretParameter)
+    {
+        return $this->where('some_column', true);
+    }
 }
 ```
 
 > **Note:**  In the above example if you do not want `_id` dropped from the end of the input you can set `protected $drop_id = false` on your filter class.  Doing this would allow you to have a `company()` filter method as well as a `companyId()` filter method.
 
 > **Note:** In the example above all methods inside `setup()` will be called every time `filter()` is called on the model
+
+#### Blacklist
+
+Any methods defined in the `blackist` array will not be called by the filter. Those methods are normally used for internal filter logic.
+
+The `blacklistMethod()` and `whitelistMethod()` methods can be used to dynamically blacklist and whitelist methods.
+
+In the example above `secretMethod()` will not be called, even if there is a `secret_method` key in the input array. In order to call this method it would need to be whitelisted dynamically:
+
+Example:
+```php
+public function setup()
+{
+    if(Auth::user()->isAdmin()) {
+        $this->whitelistMethod('secretMethod');
+    }
+}
+```
 
 
 #### Additional Filter Methods
