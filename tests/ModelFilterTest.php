@@ -30,8 +30,8 @@ class ModelFilterTest extends TestCase
     public function setUp()
     {
         $this->builder = m::mock(EloquentBuilder::class);
-        $this->filter = new ModelFilter($this->builder);
-        $this->config = require __DIR__.'/config.php';
+        $this->filter = new TestModelFilter($this->builder);
+        $this->config = require __DIR__ . '/config.php';
         $this->testInput = $this->config['test_input'];
     }
 
@@ -251,5 +251,66 @@ class ModelFilterTest extends TestCase
         $this->assertEquals($this->filter, $this->filter->addRelated('relation', function () {
         }));
         $this->assertEquals($this->filter, $this->filter->related('relation', 'param', 'val'));
+    }
+
+    public function testBlacklistAddingAndRemoving()
+    {
+        $method = 'questionableMethod';
+
+        $this->assertFalse($this->filter->methodIsBlacklisted($method));
+        $this->filter->blacklistMethod($method);
+        $this->assertTrue($this->filter->methodIsBlacklisted($method));
+        $this->filter->whitelistMethod($method);
+        $this->assertFalse($this->filter->methodIsBlacklisted($method));
+    }
+
+    public function testParentClassMethodsCantBeCalledByInput()
+    {
+        $badMethod = 'whitelistMethod';
+        $goodMethod = 'filterItem';
+
+        $filter = m::mock("TestModelFilter[$badMethod,$goodMethod]", [$this->builder]);
+
+        $filter->push($badMethod, 'something');
+        $filter->push($goodMethod, 1);
+
+        $filter->shouldNotReceive($badMethod);
+        $filter->shouldReceive($goodMethod)->once();
+        // We need to assert something to make phpunit happy so null it is!
+
+        $this->assertNull($filter->filterInput());
+    }
+
+    public function testBlacklistWontBeCalled()
+    {
+        $badMethod = 'uncallable';
+        $filter = m::mock("TestModelFilter[$badMethod]", [$this->builder]);
+
+        $filter->push($badMethod, 'something');
+        $filter->blacklistMethod($badMethod);
+        // Assert we should not be called
+        $this->assertTrue($filter->methodIsBlacklisted($badMethod));
+
+        $filter->shouldNotReceive($badMethod);
+        $filter->filterInput();
+
+        $filter->whitelistMethod($badMethod);
+
+        $filter->shouldReceive($badMethod)->once();
+
+        $filter->filterInput();
+    }
+}
+
+class TestModelFilter extends ModelFilter
+{
+    public function filterItem($item)
+    {
+        $this->where($item);
+    }
+
+    public function uncallable($doThangs)
+    {
+        $this->orderBy($doThangs);
     }
 }

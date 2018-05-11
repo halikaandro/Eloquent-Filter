@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 /**
  * @mixin QueryBuilder
  */
-class ModelFilter
+abstract class ModelFilter
 {
     /**
      * Related Models that have ModelFilters as well as the method on the ModelFilter
@@ -30,6 +30,12 @@ class ModelFilter
      * @var array
      */
     protected $allRelations = [];
+
+    /**
+     * Array of method names that should not be called
+     * @var array
+     */
+    protected $blacklist = [];
 
     /**
      * Array of input to filter.
@@ -191,7 +197,7 @@ class ModelFilter
             // Call all local methods on filter
             $method = $this->getFilterMethod($key);
 
-            if (method_exists($this, $method)) {
+            if ($this->methodIsCallable($method)) {
                 $this->{$method}($val);
             }
         }
@@ -251,7 +257,7 @@ class ModelFilter
 
     public function callRelatedLocalSetup($related, $query)
     {
-        if (method_exists($this, $method = camel_case($related).'Setup')) {
+        if (method_exists($this, $method = camel_case($related) . 'Setup')) {
             $this->{$method}($query);
         }
     }
@@ -505,5 +511,52 @@ class ModelFilter
         }
 
         return $this->drop_id = $bool;
+    }
+
+    /**
+     * Add method to the blacklist so disable calling it
+     * @param string $method
+     * @return $this
+     */
+    public function blacklistMethod($method)
+    {
+        $this->blacklist[] = $method;
+
+        return $this;
+    }
+
+    /**
+     * Remove a method from the blacklist
+     * @param string $method
+     * @return $this
+     */
+    public function whitelistMethod($method)
+    {
+        $this->blacklist = array_filter($this->blacklist, function ($name) use ($method) {
+            return $name !== $method;
+        });
+
+        return $this;
+    }
+
+    /**
+     * @param $method
+     * @return bool
+     */
+    public function methodIsBlacklisted($method)
+    {
+        return in_array($method, $this->blacklist, true);
+    }
+
+    /**
+     * Check if the method is not blacklisted and callable on the extended class
+     * @param $method
+     * @return bool
+     */
+    public function methodIsCallable($method)
+    {
+        return !$this->methodIsBlacklisted($method) &&
+            method_exists($this, $method) &&
+            !method_exists(ModelFilter::class, $method);
     }
 }
