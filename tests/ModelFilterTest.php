@@ -116,7 +116,7 @@ class ModelFilterTest extends TestCase
             'first_or_last_name' => 'firstOrLastName',
             // Test dot-notation works
             'Company.Name'       => 'companyName',
-            'Company-Name'       => 'companyName'
+            'Company-Name'       => 'companyName',
         ];
 
         foreach ($input as $key => $method) {
