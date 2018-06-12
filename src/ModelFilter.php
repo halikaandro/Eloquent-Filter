@@ -185,7 +185,7 @@ abstract class ModelFilter
      */
     public function getFilterMethod($key)
     {
-        return camel_case($this->drop_id ? preg_replace('/^(.*)_id$/', '$1', $key) : $key);
+        return camel_case(str_replace('.', '', $this->drop_id ? preg_replace('/^(.*)_id$/', '$1', $key) : $key));
     }
 
     /**
