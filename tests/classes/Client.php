@@ -9,6 +9,10 @@ class Client extends Model
 {
     use Filterable;
 
+    protected $fillable = ['name'];
+
+    public $timestamps = false;
+
     public function agent()
     {
         return $this->belongsTo(User::class);
@@ -17,5 +21,10 @@ class Client extends Model
     public function modelFilter()
     {
         return $this->provideFilter(ClientFilter::class);
+    }
+
+    public function managers()
+    {
+        return $this->belongsToMany(User::class);
     }
 }
