@@ -568,7 +568,12 @@ abstract class ModelFilter
      */
     private function registerMacros()
     {
-        if (! Relation::hasMacro('paginateFilter') && ! Relation::hasMacro('simplePaginateFilter')) {
+        if (
+            method_exists(Relation::class, 'hasMacro') &&
+            method_exists(Relation::class, 'macro') &&
+            ! Relation::hasMacro('paginateFilter') &&
+            ! Relation::hasMacro('simplePaginateFilter')
+        ) {
             Relation::macro('paginateFilter', function () {
                 $paginator = call_user_func_array([$this, 'paginate'], func_get_args());
                 $paginator->appends($this->getRelated()->filtered);
