@@ -195,16 +195,11 @@ abstract class ModelFilter
      */
     public function getFilterMethod($key)
     {
-        // Drop ID?
-        $methodName = $this->drop_id ? preg_replace('/^(.*)_id$/', '$1', $key) : $key;
-
         // Remove '.' chars in methodName
-        $methodName = str_replace('.', '', $methodName);
+        $methodName = str_replace('.', '', $this->drop_id ? preg_replace('/^(.*)_id$/', '$1', $key) : $key);
 
         // Convert key to camelCase?
-        $methodName = $this->camel_cased_methods ? camel_case($methodName) : $methodName;
-
-        return $methodName;
+        return $this->camel_cased_methods ? camel_case($methodName) : $methodName;
     }
 
     /**
