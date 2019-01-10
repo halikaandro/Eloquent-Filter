@@ -166,7 +166,9 @@ In `bootstrap/app.php`:
 config(['eloquentfilter.namespace' => "App\\Models\\ModelFilters\\"]);
 ```
 
-#### Define The Default Model Filter
+#### Define The Default Model Filter (optional)
+
+> The following is optional. If no `modelFilter` method is found on the model the model's filter class will be resolved by the [default naming conventions](#default-settings)
 
 Create a public method `modelFilter()` that returns `$this->provideFilter(Your\Model\Filter::class);` in your model.
 
