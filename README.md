@@ -105,7 +105,7 @@ There are a few ways to define the filter a model will use:
 
 - [Use EloquentFilter's Default Settings](#default-settings)
 - [Use A Custom Namespace For All Filters](#with-configuration-file-optional)
-- [Define A Model's Default Filter](#define-the-default-model-filter)
+- [Define A Model's Default Filter](#define-the-default-model-filter-optional)
 - [Dynamically Select A Model's Filter](#dynamic-filters)
 
 
@@ -244,13 +244,14 @@ This would create `app/ModelFilters/AdminFilters/UserFilter.php`
 ### Defining The Filter Logic
 Define the filter logic based on the camel cased input key passed to the `filter()` method.
 
-- Empty strings are ignored
-- `setup()` will be called regardless of input
-- `_id` is dropped from the end of the input to define the method so filtering `user_id` would use the `user()` method
+- Empty strings and null values are ignored
+- If a `setup()` method is defined it will be called once before any filter methods regardless of input
+- `_id` is dropped from the end of the input key to define the method so filtering `user_id` would use the `user()` method
+    - (can be changed with by definining `protected $drop_id = false;` on a filter)
 - Input without a corresponding filter method are ignored
 - The value of the key is injected into the method
 - All values are accessible through the `$this->input()` method or a single value by key `$this->input($key)`
-- All Eloquent Builder methods are accessible in `this` context in the model filter class.
+- All Eloquent Builder methods are accessible in `$this` context in the model filter class.
 
 To define methods for the following input:
 
@@ -446,7 +447,7 @@ class UserFilter extends ModelFilter
     }
 }
 ```
-This prepend all queries with the `hasRevenue()` whenever the `UserFilter` runs any constriants on the `clients()` relationship.  If there are no queries to the `clients()` relationship then this method will not be invoked.
+This will prepend the query to the `clients()` relation with `hasRevenue()` whenever the `UserFilter` runs any constriants on the `clients()` relationship. If there are no queries to the `clients()` relationship then this method will not be invoked.
 
 > You can learn more about scopes [here](https://laravel.com/docs/master/eloquent#local-scopes)
 
