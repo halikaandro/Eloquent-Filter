@@ -28,7 +28,7 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Custom generator stub
+    | Default Paginator Limit For `paginateFilter` and `simplePaginateFilter`
     |--------------------------------------------------------------------------
     |
     | Set paginate limit
