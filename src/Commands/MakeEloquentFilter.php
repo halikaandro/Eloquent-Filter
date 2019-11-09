@@ -4,6 +4,7 @@ namespace EloquentFilter\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Str;
 
 class MakeEloquentFilter extends Command
 {
@@ -79,11 +80,18 @@ class MakeEloquentFilter extends Command
 
     public function applyValuesToStub($stub)
     {
-        $className = class_basename($this->getClassName());
+        $className = $this->getClassBasename($this->getClassName());
         $search = ['{{class}}', '{{namespace}}'];
         $replace = [$className, str_replace('\\'.$className, '', $this->getClassName())];
 
         return str_replace($search, $replace, $stub);
+    }
+
+    private function getClassBasename($class)
+    {
+        $class = is_object($class) ? get_class($class) : $class;
+
+        return basename(str_replace('\\', '/', $class));
     }
 
     public function getPath()
@@ -121,7 +129,7 @@ class MakeEloquentFilter extends Command
      */
     public function makeClassName()
     {
-        $parts = array_map('studly_case', explode('\\', $this->argument('name')));
+        $parts = array_map([Str::class, 'studly'], explode('\\', $this->argument('name')));
         $className = array_pop($parts);
         $ns = count($parts) > 0 ? implode('\\', $parts).'\\' : '';
 
