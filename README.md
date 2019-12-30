@@ -19,11 +19,11 @@ Lets say we want to return a list of users filtered by multiple parameters. When
 
 ```php
 [
-    'name'              => 'er',
-    'last_name'   => '',
+    'name'       => 'er',
+    'last_name'  => '',
     'company_id' => '2',
-    'roles'            => ['1','4','7'],
-    'industry'      => '5'
+    'roles'      => ['1','4','7'],
+    'industry'   => '5'
 ]
 ```
 
@@ -258,8 +258,8 @@ To define methods for the following input:
 
 ```php
 [
-    'company_id'     => 5,
-    'name'                  => 'Tuck',
+    'company_id'   => 5,
+    'name'         => 'Tuck',
     'mobile_phone' => '888555'
 ]
 ```
@@ -430,7 +430,7 @@ Input used to filter:
 
 ```php
 $input = [
-    'industry'                  => '5',
+    'industry'         => '5',
     'potential_volume' => '10000'
 ];
 ```
@@ -544,7 +544,7 @@ class UserFilter extends ModelFilter
 {
     public $relations = [
         'clients' => [
-            'client_industry'   => 'industry',
+            'client_industry'  => 'industry',
             'client_potential' => 'potential_volume'
         ]
     ];
@@ -554,14 +554,14 @@ class UserFilter extends ModelFilter
 The above will receive an array like:
 ```php
 [
-    'client_industry'   => 1,
+    'client_industry'  => 1,
     'client_potential' => 100000
 ]
 ```
 And the `ClientFilter` will receive it as:
 ```php
 [
-    'industry'                   => 1,
+    'industry'         => 1,
     'potential_volume' => 100000
 ]
 ```
@@ -574,11 +574,11 @@ If the following array is passed to the `filter()` method:
 
 ```php
 [
-    'name'                           => 'er',
-    'last_name'                => ''
-    'company_id'              => 2,
-    'roles'                         => [1,4,7],
-    'industry'                  => 5,
+    'name'             => 'er',
+    'last_name'        => ''
+    'company_id'       => 2,
+    'roles'            => [1,4,7],
+    'industry'         => 5,
     'potential_volume' => '10000'
 ]
 ```
