@@ -63,7 +63,7 @@ class MakeEloquentFilter extends Command
     {
         if ($this->files->exists($path = $this->getPath())) {
             $this->error("\n\n\t".$path.' Already Exists!'."\n");
-            die;
+            exit;
         }
         $this->makeDirectory($path);
 
@@ -71,7 +71,7 @@ class MakeEloquentFilter extends Command
 
         if (! $this->files->exists($stubPath) || ! is_readable($stubPath)) {
             $this->error(sprintf('File "%s" does not exist or is unreadable.', $stubPath));
-            die;
+            exit;
         }
 
         $tmp = $this->applyValuesToStub($this->files->get($stubPath));
@@ -141,7 +141,7 @@ class MakeEloquentFilter extends Command
 
         if (class_exists($fqClass)) {
             $this->error("\n\n\t$fqClass Already Exists!\n");
-            die;
+            exit;
         }
 
         $this->setClassName($fqClass);
