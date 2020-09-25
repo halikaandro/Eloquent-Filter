@@ -126,7 +126,7 @@ abstract class ModelFilter
                 if (! empty($val)) {
                     $filterableInput[$key] = $val;
                 }
-            } else if ($val !== '' && $val !== null) {
+            } elseif ($val !== '' && $val !== null) {
                 $filterableInput[$key] = $val;
             }
         }
