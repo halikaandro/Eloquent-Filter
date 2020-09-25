@@ -46,6 +46,8 @@ class ModelFilterTest extends TestCase
         // Remove empty strings from the input
         foreach ($filteredInput as $val) {
             $this->assertNotEquals($val, '');
+            $this->assertNotNull($val);
+            $this->assertFalse(is_array($val) && empty($val));
         }
     }
 
@@ -94,7 +96,7 @@ class ModelFilterTest extends TestCase
         $this->filter->push($filteredInput);
 
         // All keys are in tact
-        foreach ($this->testInput as $key => $val) {
+        foreach ($this->filter->input() as $key => $val) {
             $this->assertEquals($this->filter->input($key), $this->testInput[$key]);
         }
 

@@ -122,12 +122,8 @@ abstract class ModelFilter
         $filterableInput = [];
 
         foreach ($input as $key => $val) {
-            if (is_array($val)) {
-                if (! empty($val)) {
+            if($this->includeFilterInput($key, $val)) {
                     $filterableInput[$key] = $val;
-                }
-            } else if ($val !== '' && $val !== null) {
-                $filterableInput[$key] = $val;
             }
         }
 
@@ -633,6 +629,18 @@ abstract class ModelFilter
         return ! $this->methodIsBlacklisted($method) &&
             method_exists($this, $method) &&
             ! method_exists(ModelFilter::class, $method);
+    }
+
+    /**
+     * Method to determine if input should be passed to the filter
+     * Returning false will exclude the input from being used in filter logic
+     * @param mixed $value
+     * @param string $key
+     * @return bool
+     */
+    protected function includeFilterInput($key, $value)
+    {
+         return $value !== '' && $value !== null && !(is_array($value) &&  empty($value));
     }
 
     /**
