@@ -7,6 +7,6 @@ return [
         'company_id' => '2',
         'roles'            => ['1', '4', '7'],
         'industry'     => '',
-        'other'            => []
+        'other'            => [],
     ],
 ];
