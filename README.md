@@ -346,8 +346,11 @@ The `Filterable` trait also comes with the below query builder helper methods:
 |EloquentFilter Method|QueryBuilder Equivalent|
 |---|---|
 |`$this->whereLike($column, $string)`|`$query->where($column, 'LIKE', '%'.$string.'%')`|
+|`$this->whereLike($column, $string, 'or')`|`$query->orWhere($column, 'LIKE', '%'.$string.'%')`|
 |`$this->whereBeginsWith($column, $string)`|`$query->where($column, 'LIKE', $string.'%')`|
+|`$this->whereBeginsWith($column, $string, 'or')`|`$query->orWhere($column, 'LIKE', $string.'%')`|
 |`$this->whereEndsWith($column, $string)`|`$query->where($column, 'LIKE', '%'.$string)`|
+|`$this->whereEndsWith($column, $string, 'or')`|`$query->orWhere($column, 'LIKE', '%'.$string)`|
 
 Since these methods are part of the `Filterable` trait they are accessible from any model that implements the trait without the need to call in the Model's EloquentFilter.
 
