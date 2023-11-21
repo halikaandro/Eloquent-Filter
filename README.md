@@ -577,7 +577,7 @@ If the following array is passed to the `filter()` method:
 ```php
 [
     'name'             => 'er',
-    'last_name'        => ''
+    'last_name'        => '',
     'company_id'       => 2,
     'roles'            => [1,4,7],
     'industry'         => 5,
