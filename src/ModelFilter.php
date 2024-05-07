@@ -44,7 +44,7 @@ abstract class ModelFilter
     /**
      * Filter out empty input so filter methods won't be called with empty values (strings, arrays, null).
      *
-     * @var array
+     * @var bool
      */
     protected $allowedEmptyFilters = false;
 
