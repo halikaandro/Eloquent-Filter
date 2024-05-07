@@ -42,6 +42,13 @@ abstract class ModelFilter
     protected $blacklist = [];
 
     /**
+     * Filter out empty input so filter methods won't be called with empty values (strings, arrays, null).
+     *
+     * @var array
+     */
+    protected $allowedEmptyFilters = false;
+
+    /**
      * Array of input to filter.
      *
      * @var array
@@ -93,8 +100,9 @@ abstract class ModelFilter
     public function __construct($query, array $input = [], $relationsEnabled = true)
     {
         $this->query = $query;
-        $this->input = $this->removeEmptyInput($input);
+        $this->input = $this->allowedEmptyFilters ? $input : $this->removeEmptyInput($input);
         $this->relationsEnabled = $relationsEnabled;
+
         $this->registerMacros();
     }
 

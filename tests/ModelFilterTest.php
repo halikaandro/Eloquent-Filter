@@ -288,6 +288,27 @@ class ModelFilterTest extends TestCase
         $this->assertFalse($this->filter->methodIsBlacklisted($method));
     }
 
+    public function testAllowedEmptyFilter()
+    {
+        $emptyInput = [
+            'empty_array' => [],
+            'null_value' => null,
+            'empty_string' => '',
+        ];
+
+        $filter = new class($this->builder, $emptyInput) extends ModelFilter
+        {
+            protected $allowedEmptyFilters = true;
+        };
+
+        $this->assertEquals($filter->input(), $emptyInput);
+
+        $filter = new class($this->builder, $emptyInput) extends ModelFilter {
+        };
+
+        $this->assertEquals($filter->input(), []);
+    }
+
     public function testParentClassMethodsCantBeCalledByInput()
     {
         $badMethod = 'whitelistMethod';
